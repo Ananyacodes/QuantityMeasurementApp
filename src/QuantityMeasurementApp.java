@@ -1,6 +1,4 @@
 public class QuantityMeasurementApp {
-    private static final double EPSILON = 1e-6;
-
     public static boolean areFeetEqual(double firstValue, double secondValue) {
         return new QuantityLength(firstValue, LengthUnit.FEET)
                 .equals(new QuantityLength(secondValue, LengthUnit.FEET));
@@ -17,12 +15,11 @@ public class QuantityMeasurementApp {
     }
 
     public static double convert(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
-        validateValue(value);
-        validateUnit(sourceUnit, "Source unit cannot be null.");
-        validateUnit(targetUnit, "Target unit cannot be null.");
+        return new QuantityLength(value, sourceUnit).convertTo(targetUnit).getValue();
+    }
 
-        double valueInFeet = sourceUnit.convertToBaseUnit(value);
-        return targetUnit.convertFromBaseUnit(valueInFeet);
+    public static double convert(double value, WeightUnit sourceUnit, WeightUnit targetUnit) {
+        return new QuantityWeight(value, sourceUnit).convertTo(targetUnit).getValue();
     }
 
     public static double demonstrateLengthConversion(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
@@ -30,11 +27,9 @@ public class QuantityMeasurementApp {
     }
 
     public static double demonstrateLengthConversion(QuantityLength quantityLength, LengthUnit targetUnit) {
-        validateUnit(targetUnit, "Target unit cannot be null.");
         if (quantityLength == null) {
             throw new IllegalArgumentException("Quantity cannot be null.");
         }
-
         return quantityLength.convertTo(targetUnit).getValue();
     }
 
@@ -55,11 +50,34 @@ public class QuantityMeasurementApp {
                 .equals(new QuantityLength(secondValue, secondUnit));
     }
 
-    public static QuantityLength add(QuantityLength firstLength, QuantityLength secondLength) {
-        if (firstLength == null || secondLength == null) {
+    public static <U extends IMeasurable> boolean demonstrateEquality(Quantity<U> first, Quantity<U> second) {
+        if (first == null || second == null) {
             throw new IllegalArgumentException("Quantities cannot be null.");
         }
-        return add(firstLength, secondLength, firstLength.getUnit());
+        return first.equals(second);
+    }
+
+    public static <U extends IMeasurable> Quantity<U> demonstrateConversion(Quantity<U> quantity, U targetUnit) {
+        if (quantity == null) {
+            throw new IllegalArgumentException("Quantity cannot be null.");
+        }
+        return quantity.convertTo(targetUnit);
+    }
+
+    public static <U extends IMeasurable> Quantity<U> demonstrateAddition(
+            Quantity<U> first,
+            Quantity<U> second,
+            U targetUnit
+    ) {
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        return first.add(second, targetUnit);
+    }
+
+    public static QuantityLength add(QuantityLength firstLength, QuantityLength secondLength) {
+        validateLengths(firstLength, secondLength);
+        return firstLength.add(secondLength);
     }
 
     public static QuantityLength add(
@@ -68,8 +86,7 @@ public class QuantityMeasurementApp {
             LengthUnit targetUnit
     ) {
         validateLengths(firstLength, secondLength);
-        validateUnit(targetUnit, "Target unit cannot be null.");
-        return addInTargetUnit(firstLength, secondLength, targetUnit);
+        return firstLength.add(secondLength, targetUnit);
     }
 
     public static QuantityLength add(
@@ -79,16 +96,13 @@ public class QuantityMeasurementApp {
             LengthUnit secondUnit,
             LengthUnit targetUnit
     ) {
-        return add(
-                new QuantityLength(firstValue, firstUnit),
-                new QuantityLength(secondValue, secondUnit),
-                targetUnit
-        );
+        return new QuantityLength(firstValue, firstUnit)
+                .add(new QuantityLength(secondValue, secondUnit), targetUnit);
     }
 
     public static QuantityWeight add(QuantityWeight firstWeight, QuantityWeight secondWeight) {
         validateWeights(firstWeight, secondWeight);
-        return add(firstWeight, secondWeight, firstWeight.getUnit());
+        return firstWeight.add(secondWeight);
     }
 
     public static QuantityWeight add(
@@ -97,8 +111,7 @@ public class QuantityMeasurementApp {
             WeightUnit targetUnit
     ) {
         validateWeights(firstWeight, secondWeight);
-        validateUnit(targetUnit, "Target unit cannot be null.");
-        return addWeightInTargetUnit(firstWeight, secondWeight, targetUnit);
+        return firstWeight.add(secondWeight, targetUnit);
     }
 
     public static QuantityWeight add(
@@ -108,171 +121,52 @@ public class QuantityMeasurementApp {
             WeightUnit secondUnit,
             WeightUnit targetUnit
     ) {
-        return add(
-                new QuantityWeight(firstValue, firstUnit),
-                new QuantityWeight(secondValue, secondUnit),
-                targetUnit
-        );
+        return new QuantityWeight(firstValue, firstUnit)
+                .add(new QuantityWeight(secondValue, secondUnit), targetUnit);
     }
 
-    public static double convert(double value, WeightUnit sourceUnit, WeightUnit targetUnit) {
-        validateValue(value);
-        validateUnit(sourceUnit, "Source unit cannot be null.");
-        validateUnit(targetUnit, "Target unit cannot be null.");
-
-        double valueInKilograms = sourceUnit.convertToBaseUnit(value);
-        return targetUnit.convertFromBaseUnit(valueInKilograms);
-    }
-
-    public static final class QuantityLength {
-        private final double value;
-        private final LengthUnit unit;
-
+    public static final class QuantityLength extends Quantity<LengthUnit> {
         public QuantityLength(double value, LengthUnit unit) {
-            validateValue(value);
-            if (unit == null) {
-                throw new IllegalArgumentException("Unit cannot be null.");
-            }
-
-            this.value = value;
-            this.unit = unit;
+            super(value, unit);
         }
 
-        public double getValue() {
-            return value;
-        }
-
-        public LengthUnit getUnit() {
-            return unit;
-        }
-
+        @Override
         public QuantityLength convertTo(LengthUnit targetUnit) {
-            validateUnit(targetUnit, "Target unit cannot be null.");
-            double convertedValue = QuantityMeasurementApp.convert(value, unit, targetUnit);
-            return new QuantityLength(convertedValue, targetUnit);
+            Quantity<LengthUnit> converted = super.convertTo(targetUnit);
+            return new QuantityLength(converted.getValue(), converted.getUnit());
         }
 
         public QuantityLength add(QuantityLength other) {
-            return QuantityMeasurementApp.add(this, other, unit);
+            Quantity<LengthUnit> result = super.add(other);
+            return new QuantityLength(result.getValue(), result.getUnit());
         }
 
         public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
-            return QuantityMeasurementApp.add(this, other, targetUnit);
+            Quantity<LengthUnit> result = super.add(other, targetUnit);
+            return new QuantityLength(result.getValue(), result.getUnit());
         }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-
-            QuantityLength quantityLength = (QuantityLength) obj;
-            return Math.abs(
-                    unit.convertToBaseUnit(value) - quantityLength.unit.convertToBaseUnit(quantityLength.value)
-            ) <= EPSILON;
-        }
-
-        @Override
-        public int hashCode() {
-            long normalizedValue = Math.round(unit.convertToBaseUnit(value) / EPSILON);
-            return Long.hashCode(normalizedValue);
-        }
-
-        @Override
-        public String toString() {
-            return "Quantity(" + value + ", " + unit.name() + ")";
-        }
-
     }
 
-    public static final class QuantityWeight {
-        private final double value;
-        private final WeightUnit unit;
-
+    public static final class QuantityWeight extends Quantity<WeightUnit> {
         public QuantityWeight(double value, WeightUnit unit) {
-            validateValue(value);
-            if (unit == null) {
-                throw new IllegalArgumentException("Unit cannot be null.");
-            }
-
-            this.value = value;
-            this.unit = unit;
+            super(value, unit);
         }
 
-        public double getValue() {
-            return value;
-        }
-
-        public WeightUnit getUnit() {
-            return unit;
-        }
-
+        @Override
         public QuantityWeight convertTo(WeightUnit targetUnit) {
-            validateUnit(targetUnit, "Target unit cannot be null.");
-            double convertedValue = QuantityMeasurementApp.convert(value, unit, targetUnit);
-            return new QuantityWeight(convertedValue, targetUnit);
+            Quantity<WeightUnit> converted = super.convertTo(targetUnit);
+            return new QuantityWeight(converted.getValue(), converted.getUnit());
         }
 
         public QuantityWeight add(QuantityWeight other) {
-            return QuantityMeasurementApp.add(this, other, unit);
+            Quantity<WeightUnit> result = super.add(other);
+            return new QuantityWeight(result.getValue(), result.getUnit());
         }
 
         public QuantityWeight add(QuantityWeight other, WeightUnit targetUnit) {
-            return QuantityMeasurementApp.add(this, other, targetUnit);
+            Quantity<WeightUnit> result = super.add(other, targetUnit);
+            return new QuantityWeight(result.getValue(), result.getUnit());
         }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-
-            QuantityWeight quantityWeight = (QuantityWeight) obj;
-            return Math.abs(
-                    unit.convertToBaseUnit(value) - quantityWeight.unit.convertToBaseUnit(quantityWeight.value)
-            ) <= EPSILON;
-        }
-
-        @Override
-        public int hashCode() {
-            long normalizedValue = Math.round(unit.convertToBaseUnit(value) / EPSILON);
-            return Long.hashCode(normalizedValue);
-        }
-
-        @Override
-        public String toString() {
-            return "Quantity(" + value + ", " + unit.name() + ")";
-        }
-    }
-
-    private static QuantityLength addInTargetUnit(
-            QuantityLength firstLength,
-            QuantityLength secondLength,
-            LengthUnit targetUnit
-    ) {
-        double firstValueInFeet = firstLength.getUnit().convertToBaseUnit(firstLength.getValue());
-        double secondValueInFeet = secondLength.getUnit().convertToBaseUnit(secondLength.getValue());
-        double sumInFeet = firstValueInFeet + secondValueInFeet;
-        double resultValue = targetUnit.convertFromBaseUnit(sumInFeet);
-        return new QuantityLength(resultValue, targetUnit);
-    }
-
-    private static QuantityWeight addWeightInTargetUnit(
-            QuantityWeight firstWeight,
-            QuantityWeight secondWeight,
-            WeightUnit targetUnit
-    ) {
-        double firstValueInKilograms = firstWeight.getUnit().convertToBaseUnit(firstWeight.getValue());
-        double secondValueInKilograms = secondWeight.getUnit().convertToBaseUnit(secondWeight.getValue());
-        double sumInKilograms = firstValueInKilograms + secondValueInKilograms;
-        double resultValue = targetUnit.convertFromBaseUnit(sumInKilograms);
-        return new QuantityWeight(resultValue, targetUnit);
     }
 
     private static void validateLengths(QuantityLength firstLength, QuantityLength secondLength) {
@@ -284,24 +178,6 @@ public class QuantityMeasurementApp {
     private static void validateWeights(QuantityWeight firstWeight, QuantityWeight secondWeight) {
         if (firstWeight == null || secondWeight == null) {
             throw new IllegalArgumentException("Quantities cannot be null.");
-        }
-    }
-
-    private static void validateValue(double value) {
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Value must be a finite number.");
-        }
-    }
-
-    private static void validateUnit(LengthUnit unit, String message) {
-        if (unit == null) {
-            throw new IllegalArgumentException(message);
-        }
-    }
-
-    private static void validateUnit(WeightUnit unit, String message) {
-        if (unit == null) {
-            throw new IllegalArgumentException(message);
         }
     }
 }

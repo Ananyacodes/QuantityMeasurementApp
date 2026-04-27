@@ -126,8 +126,29 @@ public class QuantityMeasurementAppTest {
         testWeightUnitEnum_PoundConstant();
         testWeightUnitConvertToBaseUnit();
         testWeightUnitConvertFromBaseUnit();
+        testIMeasurableInterface_LengthUnitImplementation();
+        testIMeasurableInterface_WeightUnitImplementation();
+        testIMeasurableInterface_ConsistentBehavior();
+        testGenericQuantity_LengthOperations_Equality();
+        testGenericQuantity_WeightOperations_Equality();
+        testGenericQuantity_LengthOperations_Conversion();
+        testGenericQuantity_WeightOperations_Conversion();
+        testGenericQuantity_LengthOperations_Addition();
+        testGenericQuantity_WeightOperations_Addition();
+        testCrossCategoryPrevention_LengthVsWeight();
+        testGenericQuantity_ConstructorValidation_NullUnit();
+        testGenericQuantity_ConstructorValidation_InvalidValue();
+        testQuantityMeasurementApp_SimplifiedDemonstration_Equality();
+        testQuantityMeasurementApp_SimplifiedDemonstration_Conversion();
+        testQuantityMeasurementApp_SimplifiedDemonstration_Addition();
+        testTypeWildcard_FlexibleSignatures();
+        testHashCode_GenericQuantity_Consistency();
+        testEquals_GenericQuantity_ContractPreservation();
+        testEnumAsUnitCarrier_BehaviorEncapsulation();
+        testTypeErasure_RuntimeSafety();
+        testImmutability_GenericQuantity();
 
-        System.out.println("All UC9 tests passed.");
+        System.out.println("All UC10 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -1374,6 +1395,204 @@ public class QuantityMeasurementAppTest {
                 "Expected kilograms to convert to pounds through the base-unit API.");
     }
 
+    private static void testIMeasurableInterface_LengthUnitImplementation() {
+        IMeasurable measurable = LengthUnit.FEET;
+        assertDoubleEquals(1.0, measurable.getConversionFactor(),
+                "Expected LengthUnit to implement IMeasurable.");
+    }
+
+    private static void testIMeasurableInterface_WeightUnitImplementation() {
+        IMeasurable measurable = WeightUnit.KILOGRAM;
+        assertDoubleEquals(1.0, measurable.getConversionFactor(),
+                "Expected WeightUnit to implement IMeasurable.");
+    }
+
+    private static void testIMeasurableInterface_ConsistentBehavior() {
+        assertDoubleEquals(12.0, LengthUnit.INCHES.convertFromBaseUnit(1.0),
+                "Expected LengthUnit to honor the IMeasurable contract.");
+        assertDoubleEquals(1000.0, WeightUnit.GRAM.convertFromBaseUnit(1.0),
+                "Expected WeightUnit to honor the IMeasurable contract.");
+    }
+
+    private static void testGenericQuantity_LengthOperations_Equality() {
+        assertCondition(
+                new Quantity<>(1.0, LengthUnit.FEET).equals(new Quantity<>(12.0, LengthUnit.INCHES)),
+                "Expected generic Quantity length equality to work."
+        );
+    }
+
+    private static void testGenericQuantity_WeightOperations_Equality() {
+        assertCondition(
+                new Quantity<>(1.0, WeightUnit.KILOGRAM).equals(new Quantity<>(1000.0, WeightUnit.GRAM)),
+                "Expected generic Quantity weight equality to work."
+        );
+    }
+
+    private static void testGenericQuantity_LengthOperations_Conversion() {
+        assertGenericQuantityEquals(
+                12.0,
+                LengthUnit.INCHES,
+                new Quantity<>(1.0, LengthUnit.FEET).convertTo(LengthUnit.INCHES),
+                "Expected generic Quantity length conversion to work."
+        );
+    }
+
+    private static void testGenericQuantity_WeightOperations_Conversion() {
+        assertGenericQuantityEquals(
+                1000.0,
+                WeightUnit.GRAM,
+                new Quantity<>(1.0, WeightUnit.KILOGRAM).convertTo(WeightUnit.GRAM),
+                "Expected generic Quantity weight conversion to work."
+        );
+    }
+
+    private static void testGenericQuantity_LengthOperations_Addition() {
+        assertGenericQuantityEquals(
+                2.0,
+                LengthUnit.FEET,
+                new Quantity<>(1.0, LengthUnit.FEET)
+                        .add(new Quantity<>(12.0, LengthUnit.INCHES), LengthUnit.FEET),
+                "Expected generic Quantity length addition to work."
+        );
+    }
+
+    private static void testGenericQuantity_WeightOperations_Addition() {
+        assertGenericQuantityEquals(
+                2.0,
+                WeightUnit.KILOGRAM,
+                new Quantity<>(1.0, WeightUnit.KILOGRAM)
+                        .add(new Quantity<>(1000.0, WeightUnit.GRAM), WeightUnit.KILOGRAM),
+                "Expected generic Quantity weight addition to work."
+        );
+    }
+
+    private static void testCrossCategoryPrevention_LengthVsWeight() {
+        assertCondition(
+                !new Quantity<>(1.0, LengthUnit.FEET).equals(new Quantity<>(1.0, WeightUnit.KILOGRAM)),
+                "Expected generic Quantity to reject cross-category equality."
+        );
+    }
+
+    private static void testGenericQuantity_ConstructorValidation_NullUnit() {
+        assertThrows(
+                () -> new Quantity<>(1.0, (LengthUnit) null),
+                "Expected generic Quantity to reject null units."
+        );
+    }
+
+    private static void testGenericQuantity_ConstructorValidation_InvalidValue() {
+        assertThrows(
+                () -> new Quantity<>(Double.NaN, LengthUnit.FEET),
+                "Expected generic Quantity to reject invalid values."
+        );
+    }
+
+    private static void testQuantityMeasurementApp_SimplifiedDemonstration_Equality() {
+        assertCondition(
+                QuantityMeasurementApp.demonstrateEquality(
+                        new Quantity<>(1.0, LengthUnit.FEET),
+                        new Quantity<>(12.0, LengthUnit.INCHES)
+                ),
+                "Expected generic demonstrateEquality to work for length quantities."
+        );
+        assertCondition(
+                QuantityMeasurementApp.demonstrateEquality(
+                        new Quantity<>(1.0, WeightUnit.KILOGRAM),
+                        new Quantity<>(1000.0, WeightUnit.GRAM)
+                ),
+                "Expected generic demonstrateEquality to work for weight quantities."
+        );
+    }
+
+    private static void testQuantityMeasurementApp_SimplifiedDemonstration_Conversion() {
+        assertGenericQuantityEquals(
+                12.0,
+                LengthUnit.INCHES,
+                QuantityMeasurementApp.demonstrateConversion(new Quantity<>(1.0, LengthUnit.FEET), LengthUnit.INCHES),
+                "Expected generic demonstrateConversion to work for length quantities."
+        );
+        assertGenericQuantityEquals(
+                1000.0,
+                WeightUnit.GRAM,
+                QuantityMeasurementApp.demonstrateConversion(new Quantity<>(1.0, WeightUnit.KILOGRAM), WeightUnit.GRAM),
+                "Expected generic demonstrateConversion to work for weight quantities."
+        );
+    }
+
+    private static void testQuantityMeasurementApp_SimplifiedDemonstration_Addition() {
+        assertGenericQuantityEquals(
+                2.0,
+                LengthUnit.FEET,
+                QuantityMeasurementApp.demonstrateAddition(
+                        new Quantity<>(1.0, LengthUnit.FEET),
+                        new Quantity<>(12.0, LengthUnit.INCHES),
+                        LengthUnit.FEET
+                ),
+                "Expected generic demonstrateAddition to work for length quantities."
+        );
+        assertGenericQuantityEquals(
+                2.0,
+                WeightUnit.KILOGRAM,
+                QuantityMeasurementApp.demonstrateAddition(
+                        new Quantity<>(1.0, WeightUnit.KILOGRAM),
+                        new Quantity<>(1000.0, WeightUnit.GRAM),
+                        WeightUnit.KILOGRAM
+                ),
+                "Expected generic demonstrateAddition to work for weight quantities."
+        );
+    }
+
+    private static void testTypeWildcard_FlexibleSignatures() {
+        assertCondition(
+                isQuantityValid(new Quantity<>(1.0, LengthUnit.FEET))
+                        && isQuantityValid(new Quantity<>(1.0, WeightUnit.KILOGRAM)),
+                "Expected Quantity<?> signatures to work across measurement categories."
+        );
+    }
+
+    private static void testHashCode_GenericQuantity_Consistency() {
+        Quantity<LengthUnit> first = new Quantity<>(1.0, LengthUnit.FEET);
+        Quantity<LengthUnit> second = new Quantity<>(12.0, LengthUnit.INCHES);
+
+        assertCondition(first.equals(second) && first.hashCode() == second.hashCode(),
+                "Expected equal generic quantities to share the same hash code.");
+    }
+
+    private static void testEquals_GenericQuantity_ContractPreservation() {
+        Quantity<WeightUnit> first = new Quantity<>(1.0, WeightUnit.KILOGRAM);
+        Quantity<WeightUnit> second = new Quantity<>(1000.0, WeightUnit.GRAM);
+        Quantity<WeightUnit> third = new Quantity<>(2.2046244201837775, WeightUnit.POUND);
+
+        assertCondition(first.equals(first), "Expected generic equals to be reflexive.");
+        assertCondition(first.equals(second) && second.equals(first), "Expected generic equals to be symmetric.");
+        assertCondition(first.equals(second) && second.equals(third) && first.equals(third),
+                "Expected generic equals to be transitive.");
+    }
+
+    private static void testEnumAsUnitCarrier_BehaviorEncapsulation() {
+        IMeasurable measurable = LengthUnit.YARDS;
+        assertDoubleEquals(3.0, measurable.convertToBaseUnit(1.0),
+                "Expected enum units to carry conversion behavior through the interface.");
+    }
+
+    private static void testTypeErasure_RuntimeSafety() {
+        Quantity<?> length = new Quantity<>(1.0, LengthUnit.FEET);
+        Quantity<?> weight = new Quantity<>(1.0, WeightUnit.KILOGRAM);
+
+        assertCondition(!length.equals(weight),
+                "Expected runtime unit-class checks to preserve cross-category safety.");
+    }
+
+    private static void testImmutability_GenericQuantity() {
+        Quantity<LengthUnit> original = new Quantity<>(1.0, LengthUnit.FEET);
+        Quantity<LengthUnit> converted = original.convertTo(LengthUnit.INCHES);
+
+        assertGenericQuantityEquals(1.0, LengthUnit.FEET, original,
+                "Expected generic Quantity to remain immutable after conversion.");
+        assertGenericQuantityEquals(12.0, LengthUnit.INCHES, converted,
+                "Expected generic Quantity conversion to return a new value object.");
+    }
+
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
@@ -1400,6 +1619,21 @@ public class QuantityMeasurementAppTest {
         assertDoubleEquals(expectedValue, actual.getValue(), message);
         assertCondition(actual.getUnit() == expectedUnit, message + " Expected unit: " + expectedUnit
                 + ", Actual unit: " + actual.getUnit());
+    }
+
+    private static <U extends IMeasurable> void assertGenericQuantityEquals(
+            double expectedValue,
+            U expectedUnit,
+            Quantity<U> actual,
+            String message
+    ) {
+        assertDoubleEquals(expectedValue, actual.getValue(), message);
+        assertCondition(actual.getUnit() == expectedUnit, message + " Expected unit: " + expectedUnit
+                + ", Actual unit: " + actual.getUnit());
+    }
+
+    private static boolean isQuantityValid(Quantity<?> quantity) {
+        return quantity != null && quantity.getUnit() != null;
     }
 
     private static void assertDoubleEquals(double expected, double actual, String message) {
