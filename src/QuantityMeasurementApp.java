@@ -75,6 +75,24 @@ public class QuantityMeasurementApp {
         return first.add(second, targetUnit);
     }
 
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
+            Quantity<U> first,
+            Quantity<U> second,
+            U targetUnit
+    ) {
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        return first.subtract(second, targetUnit);
+    }
+
+    public static <U extends IMeasurable> double demonstrateDivision(Quantity<U> first, Quantity<U> second) {
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        return first.divide(second);
+    }
+
     public static QuantityLength add(QuantityLength firstLength, QuantityLength secondLength) {
         validateLengths(firstLength, secondLength);
         return firstLength.add(secondLength);
@@ -145,6 +163,16 @@ public class QuantityMeasurementApp {
             Quantity<LengthUnit> result = super.add(other, targetUnit);
             return new QuantityLength(result.getValue(), result.getUnit());
         }
+
+        public QuantityLength subtract(QuantityLength other) {
+            Quantity<LengthUnit> result = super.subtract(other);
+            return new QuantityLength(result.getValue(), result.getUnit());
+        }
+
+        public QuantityLength subtract(QuantityLength other, LengthUnit targetUnit) {
+            Quantity<LengthUnit> result = super.subtract(other, targetUnit);
+            return new QuantityLength(result.getValue(), result.getUnit());
+        }
     }
 
     public static final class QuantityWeight extends Quantity<WeightUnit> {
@@ -165,6 +193,16 @@ public class QuantityMeasurementApp {
 
         public QuantityWeight add(QuantityWeight other, WeightUnit targetUnit) {
             Quantity<WeightUnit> result = super.add(other, targetUnit);
+            return new QuantityWeight(result.getValue(), result.getUnit());
+        }
+
+        public QuantityWeight subtract(QuantityWeight other) {
+            Quantity<WeightUnit> result = super.subtract(other);
+            return new QuantityWeight(result.getValue(), result.getUnit());
+        }
+
+        public QuantityWeight subtract(QuantityWeight other, WeightUnit targetUnit) {
+            Quantity<WeightUnit> result = super.subtract(other, targetUnit);
             return new QuantityWeight(result.getValue(), result.getUnit());
         }
     }

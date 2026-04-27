@@ -196,8 +196,36 @@ public class QuantityMeasurementAppTest {
         testConvertFromBaseUnit_LitreToGallon();
         testGenericQuantity_VolumeOperations_Consistency();
         testScalability_VolumeIntegration();
+        testSubtraction_SameUnit_FeetMinusFeet();
+        testSubtraction_SameUnit_LitreMinusLitre();
+        testSubtraction_CrossUnit_FeetMinusInches();
+        testSubtraction_CrossUnit_InchesMinusFeet();
+        testSubtraction_ExplicitTargetUnit_Inches();
+        testSubtraction_ResultingInNegative();
+        testSubtraction_ResultingInZero();
+        testSubtraction_WithZeroOperand();
+        testSubtraction_WithNegativeValues();
+        testSubtraction_NonCommutative();
+        testSubtraction_NullOperand();
+        testSubtraction_NullTargetUnit();
+        testSubtraction_ChainedOperations();
+        testSubtractionAddition_Inverse();
+        testSubtraction_Immutability();
+        testDivision_SameUnit_FeetDividedByFeet();
+        testDivision_SameUnit_LitreDividedByLitre();
+        testDivision_CrossUnit_FeetDividedByInches();
+        testDivision_CrossUnit_KilogramDividedByGram();
+        testDivision_RatioLessThanOne();
+        testDivision_RatioEqualToOne();
+        testDivision_NonCommutative();
+        testDivision_ByZero();
+        testDivision_NullOperand();
+        testDivision_AllMeasurementCategories();
+        testDivision_Immutability();
+        testQuantityMeasurementApp_SimplifiedDemonstration_Subtraction();
+        testQuantityMeasurementApp_SimplifiedDemonstration_Division();
 
-        System.out.println("All UC11 tests passed.");
+        System.out.println("All UC12 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -2032,6 +2060,243 @@ public class QuantityMeasurementAppTest {
         );
     }
 
+    private static void testSubtraction_SameUnit_FeetMinusFeet() {
+        assertGenericQuantityEquals(
+                5.0,
+                LengthUnit.FEET,
+                new Quantity<>(10.0, LengthUnit.FEET).subtract(new Quantity<>(5.0, LengthUnit.FEET)),
+                "Expected same-unit length subtraction to work."
+        );
+    }
+
+    private static void testSubtraction_SameUnit_LitreMinusLitre() {
+        assertGenericQuantityEquals(
+                7.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(10.0, VolumeUnit.LITRE).subtract(new Quantity<>(3.0, VolumeUnit.LITRE)),
+                "Expected same-unit volume subtraction to work."
+        );
+    }
+
+    private static void testSubtraction_CrossUnit_FeetMinusInches() {
+        assertGenericQuantityEquals(
+                9.5,
+                LengthUnit.FEET,
+                new Quantity<>(10.0, LengthUnit.FEET).subtract(new Quantity<>(6.0, LengthUnit.INCHES)),
+                "Expected cross-unit subtraction to convert to the first operand's unit."
+        );
+    }
+
+    private static void testSubtraction_CrossUnit_InchesMinusFeet() {
+        assertGenericQuantityEquals(
+                60.0,
+                LengthUnit.INCHES,
+                new Quantity<>(120.0, LengthUnit.INCHES).subtract(new Quantity<>(5.0, LengthUnit.FEET)),
+                "Expected cross-unit subtraction to work in inches."
+        );
+    }
+
+    private static void testSubtraction_ExplicitTargetUnit_Inches() {
+        assertGenericQuantityEquals(
+                114.0,
+                LengthUnit.INCHES,
+                new Quantity<>(10.0, LengthUnit.FEET)
+                        .subtract(new Quantity<>(6.0, LengthUnit.INCHES), LengthUnit.INCHES),
+                "Expected explicit target-unit subtraction to work."
+        );
+    }
+
+    private static void testSubtraction_ResultingInNegative() {
+        assertGenericQuantityEquals(
+                -5.0,
+                LengthUnit.FEET,
+                new Quantity<>(5.0, LengthUnit.FEET).subtract(new Quantity<>(10.0, LengthUnit.FEET)),
+                "Expected subtraction to support negative results."
+        );
+    }
+
+    private static void testSubtraction_ResultingInZero() {
+        assertGenericQuantityEquals(
+                0.0,
+                LengthUnit.FEET,
+                new Quantity<>(10.0, LengthUnit.FEET).subtract(new Quantity<>(120.0, LengthUnit.INCHES)),
+                "Expected subtracting equivalent quantities to yield zero."
+        );
+    }
+
+    private static void testSubtraction_WithZeroOperand() {
+        assertGenericQuantityEquals(
+                5.0,
+                LengthUnit.FEET,
+                new Quantity<>(5.0, LengthUnit.FEET).subtract(new Quantity<>(0.0, LengthUnit.INCHES)),
+                "Expected subtracting zero to preserve the original value."
+        );
+    }
+
+    private static void testSubtraction_WithNegativeValues() {
+        assertGenericQuantityEquals(
+                7.0,
+                LengthUnit.FEET,
+                new Quantity<>(5.0, LengthUnit.FEET).subtract(new Quantity<>(-2.0, LengthUnit.FEET)),
+                "Expected subtraction with negative values to work."
+        );
+    }
+
+    private static void testSubtraction_NonCommutative() {
+        Quantity<LengthUnit> first = new Quantity<>(10.0, LengthUnit.FEET)
+                .subtract(new Quantity<>(5.0, LengthUnit.FEET));
+        Quantity<LengthUnit> second = new Quantity<>(5.0, LengthUnit.FEET)
+                .subtract(new Quantity<>(10.0, LengthUnit.FEET));
+
+        assertCondition(first.getValue() == 5.0 && second.getValue() == -5.0,
+                "Expected subtraction to be non-commutative.");
+    }
+
+    private static void testSubtraction_NullOperand() {
+        assertThrows(
+                () -> new Quantity<>(10.0, LengthUnit.FEET).subtract(null),
+                "Expected subtraction to reject null operands."
+        );
+    }
+
+    private static void testSubtraction_NullTargetUnit() {
+        assertThrows(
+                () -> new Quantity<>(10.0, LengthUnit.FEET)
+                        .subtract(new Quantity<>(5.0, LengthUnit.FEET), null),
+                "Expected subtraction to reject null target units."
+        );
+    }
+
+    private static void testSubtraction_ChainedOperations() {
+        assertGenericQuantityEquals(
+                7.0,
+                LengthUnit.FEET,
+                new Quantity<>(10.0, LengthUnit.FEET)
+                        .subtract(new Quantity<>(2.0, LengthUnit.FEET))
+                        .subtract(new Quantity<>(1.0, LengthUnit.FEET)),
+                "Expected subtraction results to support chaining."
+        );
+    }
+
+    private static void testSubtractionAddition_Inverse() {
+        Quantity<LengthUnit> original = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> other = new Quantity<>(2.0, LengthUnit.FEET);
+        Quantity<LengthUnit> result = original.add(other).subtract(other);
+
+        assertGenericQuantityEquals(10.0, LengthUnit.FEET, result,
+                "Expected addition followed by subtraction to return the original value.");
+    }
+
+    private static void testSubtraction_Immutability() {
+        Quantity<LengthUnit> original = new Quantity<>(10.0, LengthUnit.FEET);
+        Quantity<LengthUnit> result = original.subtract(new Quantity<>(2.0, LengthUnit.FEET));
+
+        assertGenericQuantityEquals(10.0, LengthUnit.FEET, original,
+                "Expected original quantity to remain unchanged after subtraction.");
+        assertGenericQuantityEquals(8.0, LengthUnit.FEET, result,
+                "Expected subtraction to return a new quantity.");
+    }
+
+    private static void testDivision_SameUnit_FeetDividedByFeet() {
+        assertDoubleEquals(5.0,
+                new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(2.0, LengthUnit.FEET)),
+                "Expected same-unit division to work.");
+    }
+
+    private static void testDivision_SameUnit_LitreDividedByLitre() {
+        assertDoubleEquals(2.0,
+                new Quantity<>(10.0, VolumeUnit.LITRE).divide(new Quantity<>(5.0, VolumeUnit.LITRE)),
+                "Expected same-unit volume division to work.");
+    }
+
+    private static void testDivision_CrossUnit_FeetDividedByInches() {
+        assertDoubleEquals(1.0,
+                new Quantity<>(24.0, LengthUnit.INCHES).divide(new Quantity<>(2.0, LengthUnit.FEET)),
+                "Expected cross-unit length division to work.");
+    }
+
+    private static void testDivision_CrossUnit_KilogramDividedByGram() {
+        assertDoubleEquals(1.0,
+                new Quantity<>(2.0, WeightUnit.KILOGRAM).divide(new Quantity<>(2000.0, WeightUnit.GRAM)),
+                "Expected cross-unit weight division to work.");
+    }
+
+    private static void testDivision_RatioLessThanOne() {
+        assertDoubleEquals(0.5,
+                new Quantity<>(5.0, LengthUnit.FEET).divide(new Quantity<>(10.0, LengthUnit.FEET)),
+                "Expected division to support ratios below one.");
+    }
+
+    private static void testDivision_RatioEqualToOne() {
+        assertDoubleEquals(1.0,
+                new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(10.0, LengthUnit.FEET)),
+                "Expected equal quantities to divide to one.");
+    }
+
+    private static void testDivision_NonCommutative() {
+        double first = new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(5.0, LengthUnit.FEET));
+        double second = new Quantity<>(5.0, LengthUnit.FEET).divide(new Quantity<>(10.0, LengthUnit.FEET));
+
+        assertCondition(first == 2.0 && second == 0.5,
+                "Expected division to be non-commutative.");
+    }
+
+    private static void testDivision_ByZero() {
+        assertArithmeticThrows(
+                () -> new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(0.0, LengthUnit.FEET)),
+                "Expected division by zero quantity to throw ArithmeticException."
+        );
+    }
+
+    private static void testDivision_NullOperand() {
+        assertThrows(
+                () -> new Quantity<>(10.0, LengthUnit.FEET).divide(null),
+                "Expected division to reject null operands."
+        );
+    }
+
+    private static void testDivision_AllMeasurementCategories() {
+        assertDoubleEquals(2.0,
+                new Quantity<>(10.0, WeightUnit.KILOGRAM).divide(new Quantity<>(5.0, WeightUnit.KILOGRAM)),
+                "Expected division to work for weight.");
+        assertDoubleEquals(0.5,
+                new Quantity<>(5.0, VolumeUnit.LITRE).divide(new Quantity<>(10.0, VolumeUnit.LITRE)),
+                "Expected division to work for volume.");
+    }
+
+    private static void testDivision_Immutability() {
+        Quantity<LengthUnit> original = new Quantity<>(10.0, LengthUnit.FEET);
+        double result = original.divide(new Quantity<>(2.0, LengthUnit.FEET));
+
+        assertGenericQuantityEquals(10.0, LengthUnit.FEET, original,
+                "Expected original quantity to remain unchanged after division.");
+        assertDoubleEquals(5.0, result, "Expected division to return the correct scalar result.");
+    }
+
+    private static void testQuantityMeasurementApp_SimplifiedDemonstration_Subtraction() {
+        assertGenericQuantityEquals(
+                5.0,
+                WeightUnit.KILOGRAM,
+                QuantityMeasurementApp.demonstrateSubtraction(
+                        new Quantity<>(10.0, WeightUnit.KILOGRAM),
+                        new Quantity<>(5000.0, WeightUnit.GRAM),
+                        WeightUnit.KILOGRAM
+                ),
+                "Expected generic subtraction demonstration to work."
+        );
+    }
+
+    private static void testQuantityMeasurementApp_SimplifiedDemonstration_Division() {
+        assertDoubleEquals(
+                1.0,
+                QuantityMeasurementApp.demonstrateDivision(
+                        new Quantity<>(1000.0, VolumeUnit.MILLILITRE),
+                        new Quantity<>(1.0, VolumeUnit.LITRE)
+                ),
+                "Expected generic division demonstration to work."
+        );
+    }
+
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
@@ -2086,6 +2351,14 @@ public class QuantityMeasurementAppTest {
             runnable.run();
             throw new AssertionError(message);
         } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    private static void assertArithmeticThrows(Runnable runnable, String message) {
+        try {
+            runnable.run();
+            throw new AssertionError(message);
+        } catch (ArithmeticException ignored) {
         }
     }
 }

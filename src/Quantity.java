@@ -31,9 +31,32 @@ public class Quantity<U extends IMeasurable> {
 
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
         validateQuantity(other);
+        validateSameCategory(other);
         validateUnit(targetUnit);
         double baseSum = unit.convertToBaseUnit(value) + other.unit.convertToBaseUnit(other.value);
         return new Quantity<>(targetUnit.convertFromBaseUnit(baseSum), targetUnit);
+    }
+
+    public Quantity<U> subtract(Quantity<U> other) {
+        return subtract(other, unit);
+    }
+
+    public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
+        validateQuantity(other);
+        validateSameCategory(other);
+        validateUnit(targetUnit);
+        double baseDifference = unit.convertToBaseUnit(value) - other.unit.convertToBaseUnit(other.value);
+        return new Quantity<>(targetUnit.convertFromBaseUnit(baseDifference), targetUnit);
+    }
+
+    public double divide(Quantity<U> other) {
+        validateQuantity(other);
+        validateSameCategory(other);
+        double divisor = other.unit.convertToBaseUnit(other.value);
+        if (Math.abs(divisor) <= EPSILON) {
+            throw new ArithmeticException("Cannot divide by zero quantity.");
+        }
+        return unit.convertToBaseUnit(value) / divisor;
     }
 
     @Override
@@ -81,6 +104,12 @@ public class Quantity<U extends IMeasurable> {
     private static void validateQuantity(Quantity<?> quantity) {
         if (quantity == null) {
             throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+    }
+
+    private void validateSameCategory(Quantity<?> other) {
+        if (unit.getClass() != other.unit.getClass()) {
+            throw new IllegalArgumentException("Quantities must belong to the same measurement category.");
         }
     }
 }
