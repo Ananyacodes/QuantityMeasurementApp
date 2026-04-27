@@ -94,8 +94,40 @@ public class QuantityMeasurementAppTest {
         testQuantityLengthRefactored_InvalidValue();
         testRoundTripConversion_RefactoredDesign();
         testUnitImmutability();
+        testEquality_KilogramToKilogram_SameValue();
+        testEquality_KilogramToKilogram_DifferentValue();
+        testEquality_KilogramToGram_EquivalentValue();
+        testEquality_GramToKilogram_EquivalentValue();
+        testEquality_WeightVsLength_Incompatible();
+        testEquality_WeightNullComparison();
+        testEquality_WeightSameReference();
+        testEquality_WeightNullUnit();
+        testEquality_WeightTransitiveProperty();
+        testEquality_WeightZeroValue();
+        testEquality_NegativeWeight();
+        testEquality_LargeWeightValue();
+        testEquality_SmallWeightValue();
+        testConversion_PoundToKilogram();
+        testConversion_KilogramToPound();
+        testConversion_WeightSameUnit();
+        testConversion_WeightZeroValue();
+        testConversion_WeightNegativeValue();
+        testConversion_WeightRoundTrip();
+        testAddition_SameUnit_KilogramPlusKilogram();
+        testAddition_CrossUnit_KilogramPlusGram();
+        testAddition_CrossUnit_PoundPlusKilogram();
+        testAddition_ExplicitTargetUnit_Gram();
+        testAddition_WeightCommutativity();
+        testAddition_WeightWithZero();
+        testAddition_WeightNegativeValues();
+        testAddition_WeightLargeValues();
+        testWeightUnitEnum_KilogramConstant();
+        testWeightUnitEnum_GramConstant();
+        testWeightUnitEnum_PoundConstant();
+        testWeightUnitConvertToBaseUnit();
+        testWeightUnitConvertFromBaseUnit();
 
-        System.out.println("All UC8 tests passed.");
+        System.out.println("All UC9 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -1065,6 +1097,283 @@ public class QuantityMeasurementAppTest {
         );
     }
 
+    private static void testEquality_KilogramToKilogram_SameValue() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)),
+                "Expected identical kilogram weights to be equal."
+        );
+    }
+
+    private static void testEquality_KilogramToKilogram_DifferentValue() {
+        assertCondition(
+                !new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(2.0, WeightUnit.KILOGRAM)),
+                "Expected different kilogram weights to not be equal."
+        );
+    }
+
+    private static void testEquality_KilogramToGram_EquivalentValue() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM)),
+                "Expected 1 kilogram to equal 1000 grams."
+        );
+    }
+
+    private static void testEquality_GramToKilogram_EquivalentValue() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)),
+                "Expected 1000 grams to equal 1 kilogram."
+        );
+    }
+
+    private static void testEquality_WeightVsLength_Incompatible() {
+        assertCondition(
+                !new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityLength(1.0, LengthUnit.FEET)),
+                "Expected weight and length quantities to be incomparable."
+        );
+    }
+
+    private static void testEquality_WeightNullComparison() {
+        assertCondition(
+                !new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM).equals(null),
+                "Expected a weight quantity to not equal null."
+        );
+    }
+
+    private static void testEquality_WeightSameReference() {
+        QuantityMeasurementApp.QuantityWeight weight =
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM);
+
+        assertCondition(weight.equals(weight), "Expected a weight quantity to equal itself.");
+    }
+
+    private static void testEquality_WeightNullUnit() {
+        assertThrows(
+                () -> new QuantityMeasurementApp.QuantityWeight(1.0, null),
+                "Expected QuantityWeight to reject a null unit."
+        );
+    }
+
+    private static void testEquality_WeightTransitiveProperty() {
+        QuantityMeasurementApp.QuantityWeight kilograms =
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM);
+        QuantityMeasurementApp.QuantityWeight grams =
+                new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM);
+        QuantityMeasurementApp.QuantityWeight pounds =
+                new QuantityMeasurementApp.QuantityWeight(2.2046244201837775, WeightUnit.POUND);
+
+        assertCondition(
+                kilograms.equals(grams) && grams.equals(pounds) && kilograms.equals(pounds),
+                "Expected weight equality to be transitive across units."
+        );
+    }
+
+    private static void testEquality_WeightZeroValue() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(0.0, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(0.0, WeightUnit.GRAM)),
+                "Expected zero weight values to be equal across units."
+        );
+    }
+
+    private static void testEquality_NegativeWeight() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(-1.0, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(-1000.0, WeightUnit.GRAM)),
+                "Expected negative weights to compare correctly across units."
+        );
+    }
+
+    private static void testEquality_LargeWeightValue() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(1000000.0, WeightUnit.GRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.KILOGRAM)),
+                "Expected large weight values to maintain precision across units."
+        );
+    }
+
+    private static void testEquality_SmallWeightValue() {
+        assertCondition(
+                new QuantityMeasurementApp.QuantityWeight(0.001, WeightUnit.KILOGRAM)
+                        .equals(new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.GRAM)),
+                "Expected small weight values to maintain precision across units."
+        );
+    }
+
+    private static void testConversion_PoundToKilogram() {
+        assertWeightEquals(
+                0.907184,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(2.0, WeightUnit.POUND).convertTo(WeightUnit.KILOGRAM),
+                "Expected pounds to convert to kilograms correctly."
+        );
+    }
+
+    private static void testConversion_KilogramToPound() {
+        assertWeightEquals(
+                2.2046244201837775,
+                WeightUnit.POUND,
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM).convertTo(WeightUnit.POUND),
+                "Expected kilograms to convert to pounds correctly."
+        );
+    }
+
+    private static void testConversion_WeightSameUnit() {
+        assertWeightEquals(
+                5.0,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(5.0, WeightUnit.KILOGRAM).convertTo(WeightUnit.KILOGRAM),
+                "Expected same-unit weight conversion to preserve value."
+        );
+    }
+
+    private static void testConversion_WeightZeroValue() {
+        assertWeightEquals(
+                0.0,
+                WeightUnit.GRAM,
+                new QuantityMeasurementApp.QuantityWeight(0.0, WeightUnit.KILOGRAM).convertTo(WeightUnit.GRAM),
+                "Expected zero weight conversion to preserve zero."
+        );
+    }
+
+    private static void testConversion_WeightNegativeValue() {
+        assertWeightEquals(
+                -1000.0,
+                WeightUnit.GRAM,
+                new QuantityMeasurementApp.QuantityWeight(-1.0, WeightUnit.KILOGRAM).convertTo(WeightUnit.GRAM),
+                "Expected negative weight conversion to preserve sign."
+        );
+    }
+
+    private static void testConversion_WeightRoundTrip() {
+        QuantityMeasurementApp.QuantityWeight roundTrip =
+                new QuantityMeasurementApp.QuantityWeight(1.5, WeightUnit.KILOGRAM)
+                        .convertTo(WeightUnit.GRAM)
+                        .convertTo(WeightUnit.KILOGRAM);
+
+        assertWeightEquals(1.5, WeightUnit.KILOGRAM, roundTrip,
+                "Expected weight round-trip conversion to preserve value.");
+    }
+
+    private static void testAddition_SameUnit_KilogramPlusKilogram() {
+        assertWeightEquals(
+                3.0,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .add(new QuantityMeasurementApp.QuantityWeight(2.0, WeightUnit.KILOGRAM)),
+                "Expected kilogram addition to work without conversion."
+        );
+    }
+
+    private static void testAddition_CrossUnit_KilogramPlusGram() {
+        assertWeightEquals(
+                2.0,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .add(new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM)),
+                "Expected kilogram plus gram addition to convert correctly."
+        );
+    }
+
+    private static void testAddition_CrossUnit_PoundPlusKilogram() {
+        assertWeightEquals(
+                4.409248840367555,
+                WeightUnit.POUND,
+                new QuantityMeasurementApp.QuantityWeight(2.2046244201837775, WeightUnit.POUND)
+                        .add(new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)),
+                "Expected pound plus kilogram addition to convert correctly."
+        );
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Gram() {
+        assertWeightEquals(
+                2000.0,
+                WeightUnit.GRAM,
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM)
+                        .add(new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM), WeightUnit.GRAM),
+                "Expected explicit target weight addition to honor grams."
+        );
+    }
+
+    private static void testAddition_WeightCommutativity() {
+        QuantityMeasurementApp.QuantityWeight firstResult = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM),
+                new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM),
+                WeightUnit.GRAM
+        );
+        QuantityMeasurementApp.QuantityWeight secondResult = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityWeight(1000.0, WeightUnit.GRAM),
+                new QuantityMeasurementApp.QuantityWeight(1.0, WeightUnit.KILOGRAM),
+                WeightUnit.GRAM
+        );
+
+        assertCondition(firstResult.equals(secondResult),
+                "Expected weight addition to be commutative for the same target unit.");
+    }
+
+    private static void testAddition_WeightWithZero() {
+        assertWeightEquals(
+                5.0,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(5.0, WeightUnit.KILOGRAM)
+                        .add(new QuantityMeasurementApp.QuantityWeight(0.0, WeightUnit.GRAM)),
+                "Expected adding zero weight to preserve the original value."
+        );
+    }
+
+    private static void testAddition_WeightNegativeValues() {
+        assertWeightEquals(
+                3.0,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(5.0, WeightUnit.KILOGRAM)
+                        .add(new QuantityMeasurementApp.QuantityWeight(-2000.0, WeightUnit.GRAM)),
+                "Expected weight addition to handle negative values."
+        );
+    }
+
+    private static void testAddition_WeightLargeValues() {
+        assertWeightEquals(
+                2e6,
+                WeightUnit.KILOGRAM,
+                new QuantityMeasurementApp.QuantityWeight(1e6, WeightUnit.KILOGRAM)
+                        .add(new QuantityMeasurementApp.QuantityWeight(1e6, WeightUnit.KILOGRAM)),
+                "Expected large weight additions to remain accurate."
+        );
+    }
+
+    private static void testWeightUnitEnum_KilogramConstant() {
+        assertDoubleEquals(1.0, WeightUnit.KILOGRAM.getConversionFactor(),
+                "Expected kilogram conversion factor to be 1.0.");
+    }
+
+    private static void testWeightUnitEnum_GramConstant() {
+        assertDoubleEquals(0.001, WeightUnit.GRAM.getConversionFactor(),
+                "Expected gram conversion factor to be 0.001.");
+    }
+
+    private static void testWeightUnitEnum_PoundConstant() {
+        assertDoubleEquals(0.453592, WeightUnit.POUND.getConversionFactor(),
+                "Expected pound conversion factor to be 0.453592.");
+    }
+
+    private static void testWeightUnitConvertToBaseUnit() {
+        assertDoubleEquals(1.0, WeightUnit.GRAM.convertToBaseUnit(1000.0),
+                "Expected grams to convert to kilograms through the base-unit API.");
+        assertDoubleEquals(1.0, WeightUnit.POUND.convertToBaseUnit(2.2046244201837775),
+                "Expected pounds to convert to kilograms through the base-unit API.");
+    }
+
+    private static void testWeightUnitConvertFromBaseUnit() {
+        assertDoubleEquals(1000.0, WeightUnit.GRAM.convertFromBaseUnit(1.0),
+                "Expected kilograms to convert to grams through the base-unit API.");
+        assertDoubleEquals(2.2046244201837775, WeightUnit.POUND.convertFromBaseUnit(1.0),
+                "Expected kilograms to convert to pounds through the base-unit API.");
+    }
+
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
@@ -1075,6 +1384,17 @@ public class QuantityMeasurementAppTest {
             double expectedValue,
             LengthUnit expectedUnit,
             QuantityMeasurementApp.QuantityLength actual,
+            String message
+    ) {
+        assertDoubleEquals(expectedValue, actual.getValue(), message);
+        assertCondition(actual.getUnit() == expectedUnit, message + " Expected unit: " + expectedUnit
+                + ", Actual unit: " + actual.getUnit());
+    }
+
+    private static void assertWeightEquals(
+            double expectedValue,
+            WeightUnit expectedUnit,
+            QuantityMeasurementApp.QuantityWeight actual,
             String message
     ) {
         assertDoubleEquals(expectedValue, actual.getValue(), message);
