@@ -67,16 +67,9 @@ public class QuantityMeasurementApp {
             QuantityLength secondLength,
             LengthUnit targetUnit
     ) {
-        if (firstLength == null || secondLength == null) {
-            throw new IllegalArgumentException("Quantities cannot be null.");
-        }
+        validateLengths(firstLength, secondLength);
         validateUnit(targetUnit, "Target unit cannot be null.");
-
-        double firstValueInFeet = firstLength.getUnit().toFeet(firstLength.getValue());
-        double secondValueInFeet = secondLength.getUnit().toFeet(secondLength.getValue());
-        double sumInFeet = firstValueInFeet + secondValueInFeet;
-        double resultValue = targetUnit.fromFeet(sumInFeet);
-        return new QuantityLength(resultValue, targetUnit);
+        return addInTargetUnit(firstLength, secondLength, targetUnit);
     }
 
     public static QuantityLength add(
@@ -174,6 +167,24 @@ public class QuantityMeasurementApp {
             return "Quantity(" + value + ", " + unit.name() + ")";
         }
 
+    }
+
+    private static QuantityLength addInTargetUnit(
+            QuantityLength firstLength,
+            QuantityLength secondLength,
+            LengthUnit targetUnit
+    ) {
+        double firstValueInFeet = firstLength.getUnit().toFeet(firstLength.getValue());
+        double secondValueInFeet = secondLength.getUnit().toFeet(secondLength.getValue());
+        double sumInFeet = firstValueInFeet + secondValueInFeet;
+        double resultValue = targetUnit.fromFeet(sumInFeet);
+        return new QuantityLength(resultValue, targetUnit);
+    }
+
+    private static void validateLengths(QuantityLength firstLength, QuantityLength secondLength) {
+        if (firstLength == null || secondLength == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
     }
 
     private static void validateValue(double value) {

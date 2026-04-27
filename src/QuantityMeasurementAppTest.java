@@ -61,8 +61,21 @@ public class QuantityMeasurementAppTest {
         testAddition_SmallValues();
         testAddition_StaticOverload_WithTargetUnit();
         testAddition_InstanceMethod_WithTargetUnit();
+        testAddition_ExplicitTargetUnit_Feet();
+        testAddition_ExplicitTargetUnit_Inches();
+        testAddition_ExplicitTargetUnit_Yards();
+        testAddition_ExplicitTargetUnit_Centimeters();
+        testAddition_ExplicitTargetUnit_SameAsFirstOperand();
+        testAddition_ExplicitTargetUnit_SameAsSecondOperand();
+        testAddition_ExplicitTargetUnit_Commutativity();
+        testAddition_ExplicitTargetUnit_WithZero();
+        testAddition_ExplicitTargetUnit_NegativeValues();
+        testAddition_ExplicitTargetUnit_NullTargetUnit();
+        testAddition_ExplicitTargetUnit_LargeToSmallScale();
+        testAddition_ExplicitTargetUnit_SmallToLargeScale();
+        testAddition_ExplicitTargetUnit_PrecisionTolerance();
 
-        System.out.println("All UC6 tests passed.");
+        System.out.println("All UC7 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -757,6 +770,154 @@ public class QuantityMeasurementAppTest {
                 result,
                 "Expected instance add overload to honor the requested target unit."
         );
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Feet() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.FEET
+        );
+
+        assertQuantityEquals(2.0, QuantityMeasurementApp.LengthUnit.FEET, result,
+                "Expected explicit target FEET addition to return 2.0 FEET.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Inches() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.INCHES
+        );
+
+        assertQuantityEquals(24.0, QuantityMeasurementApp.LengthUnit.INCHES, result,
+                "Expected explicit target INCHES addition to return 24.0 INCHES.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Yards() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+
+        assertQuantityEquals(2.0 / 3.0, QuantityMeasurementApp.LengthUnit.YARDS, result,
+                "Expected explicit target YARDS addition to return about 0.667 YARDS.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Centimeters() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.CENTIMETERS
+        );
+
+        assertQuantityEquals(5.08, QuantityMeasurementApp.LengthUnit.CENTIMETERS, result,
+                "Expected explicit target CENTIMETERS addition to return about 5.08 CENTIMETERS.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_SameAsFirstOperand() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(2.0, QuantityMeasurementApp.LengthUnit.YARDS),
+                new QuantityMeasurementApp.QuantityLength(3.0, QuantityMeasurementApp.LengthUnit.FEET),
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+
+        assertQuantityEquals(3.0, QuantityMeasurementApp.LengthUnit.YARDS, result,
+                "Expected explicit target matching first operand to be honored.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_SameAsSecondOperand() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(2.0, QuantityMeasurementApp.LengthUnit.YARDS),
+                new QuantityMeasurementApp.QuantityLength(3.0, QuantityMeasurementApp.LengthUnit.FEET),
+                QuantityMeasurementApp.LengthUnit.FEET
+        );
+
+        assertQuantityEquals(9.0, QuantityMeasurementApp.LengthUnit.FEET, result,
+                "Expected explicit target matching second operand to be honored.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Commutativity() {
+        QuantityMeasurementApp.QuantityLength firstResult = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+        QuantityMeasurementApp.QuantityLength secondResult = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET),
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+
+        assertCondition(firstResult.equals(secondResult),
+                "Expected explicit target-unit addition to remain commutative.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_WithZero() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(5.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(0.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+
+        assertQuantityEquals(5.0 / 3.0, QuantityMeasurementApp.LengthUnit.YARDS, result,
+                "Expected zero operand with explicit target conversion to preserve value.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_NegativeValues() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(5.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(-2.0, QuantityMeasurementApp.LengthUnit.FEET),
+                QuantityMeasurementApp.LengthUnit.INCHES
+        );
+
+        assertQuantityEquals(36.0, QuantityMeasurementApp.LengthUnit.INCHES, result,
+                "Expected explicit target-unit addition to handle negative values.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_NullTargetUnit() {
+        assertThrows(
+                () -> QuantityMeasurementApp.add(
+                        new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET),
+                        new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                        null
+                ),
+                "Expected a null explicit target unit to be rejected."
+        );
+    }
+
+    private static void testAddition_ExplicitTargetUnit_LargeToSmallScale() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(1000.0, QuantityMeasurementApp.LengthUnit.FEET),
+                new QuantityMeasurementApp.QuantityLength(500.0, QuantityMeasurementApp.LengthUnit.FEET),
+                QuantityMeasurementApp.LengthUnit.INCHES
+        );
+
+        assertQuantityEquals(18000.0, QuantityMeasurementApp.LengthUnit.INCHES, result,
+                "Expected explicit target conversion from feet to inches to stay accurate for large values.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_SmallToLargeScale() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+
+        assertQuantityEquals(2.0 / 3.0, QuantityMeasurementApp.LengthUnit.YARDS, result,
+                "Expected explicit target conversion from inches to yards to stay accurate.");
+    }
+
+    private static void testAddition_ExplicitTargetUnit_PrecisionTolerance() {
+        QuantityMeasurementApp.QuantityLength result = QuantityMeasurementApp.add(
+                new QuantityMeasurementApp.QuantityLength(2.54, QuantityMeasurementApp.LengthUnit.CENTIMETERS),
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.INCHES),
+                QuantityMeasurementApp.LengthUnit.CENTIMETERS
+        );
+
+        assertQuantityEquals(5.08, QuantityMeasurementApp.LengthUnit.CENTIMETERS, result,
+                "Expected explicit target-unit addition to stay within precision tolerance.");
     }
 
     private static void assertCondition(boolean condition, String message) {
