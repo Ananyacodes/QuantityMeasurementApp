@@ -1,4 +1,5 @@
 public class QuantityMeasurementApp {
+    private static final double EPSILON = 1e-6;
 
     public static boolean areFeetEqual(double firstValue, double secondValue) {
         return new QuantityLength(firstValue, LengthUnit.FEET)
@@ -15,6 +16,45 @@ public class QuantityMeasurementApp {
                 .equals(new QuantityLength(inchesValue, LengthUnit.INCHES));
     }
 
+    public static double convert(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
+        validateValue(value);
+        validateUnit(sourceUnit, "Source unit cannot be null.");
+        validateUnit(targetUnit, "Target unit cannot be null.");
+
+        double valueInFeet = sourceUnit.toFeet(value);
+        return targetUnit.fromFeet(valueInFeet);
+    }
+
+    public static double demonstrateLengthConversion(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
+        return convert(value, sourceUnit, targetUnit);
+    }
+
+    public static double demonstrateLengthConversion(QuantityLength quantityLength, LengthUnit targetUnit) {
+        validateUnit(targetUnit, "Target unit cannot be null.");
+        if (quantityLength == null) {
+            throw new IllegalArgumentException("Quantity cannot be null.");
+        }
+
+        return quantityLength.convertTo(targetUnit).getValue();
+    }
+
+    public static boolean demonstrateLengthEquality(QuantityLength firstLength, QuantityLength secondLength) {
+        if (firstLength == null || secondLength == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        return firstLength.equals(secondLength);
+    }
+
+    public static boolean demonstrateLengthComparison(
+            double firstValue,
+            LengthUnit firstUnit,
+            double secondValue,
+            LengthUnit secondUnit
+    ) {
+        return new QuantityLength(firstValue, firstUnit)
+                .equals(new QuantityLength(secondValue, secondUnit));
+    }
+
     public enum LengthUnit {
         FEET(1.0),
         INCHES(1.0 / 12.0),
@@ -29,6 +69,10 @@ public class QuantityMeasurementApp {
 
         public double toFeet(double value) {
             return value * conversionFactorToFeet;
+        }
+
+        public double fromFeet(double valueInFeet) {
+            return valueInFeet / conversionFactorToFeet;
         }
     }
 
@@ -54,6 +98,12 @@ public class QuantityMeasurementApp {
             return unit;
         }
 
+        public QuantityLength convertTo(LengthUnit targetUnit) {
+            validateUnit(targetUnit, "Target unit cannot be null.");
+            double convertedValue = QuantityMeasurementApp.convert(value, unit, targetUnit);
+            return new QuantityLength(convertedValue, targetUnit);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -64,12 +114,13 @@ public class QuantityMeasurementApp {
             }
 
             QuantityLength quantityLength = (QuantityLength) obj;
-            return Double.compare(unit.toFeet(value), quantityLength.unit.toFeet(quantityLength.value)) == 0;
+            return Math.abs(unit.toFeet(value) - quantityLength.unit.toFeet(quantityLength.value)) <= EPSILON;
         }
 
         @Override
         public int hashCode() {
-            return Double.hashCode(unit.toFeet(value));
+            long normalizedValue = Math.round(unit.toFeet(value) / EPSILON);
+            return Long.hashCode(normalizedValue);
         }
 
         @Override
@@ -77,10 +128,17 @@ public class QuantityMeasurementApp {
             return "Quantity(" + value + ", " + unit.name() + ")";
         }
 
-        private static void validateValue(double value) {
-            if (Double.isNaN(value) || Double.isInfinite(value)) {
-                throw new IllegalArgumentException("Value must be a finite number.");
-            }
+    }
+
+    private static void validateValue(double value) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Value must be a finite number.");
+        }
+    }
+
+    private static void validateUnit(LengthUnit unit, String message) {
+        if (unit == null) {
+            throw new IllegalArgumentException(message);
         }
     }
 }

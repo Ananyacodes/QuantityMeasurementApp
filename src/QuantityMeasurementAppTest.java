@@ -32,8 +32,23 @@ public class QuantityMeasurementAppTest {
         testEquality_CentimetersWithNullUnit();
         testEquality_CentimetersSameReference();
         testEquality_CentimetersNullComparison();
+        testConversion_FeetToInches();
+        testConversion_InchesToFeet();
+        testConversion_YardsToInches();
+        testConversion_InchesToYards();
+        testConversion_CentimetersToInches();
+        testConversion_FeetToYard();
+        testConversion_RoundTrip_PreservesValue();
+        testConversion_ZeroValue();
+        testConversion_NegativeValue();
+        testConversion_SameUnit();
+        testConversion_InvalidUnit_Throws();
+        testConversion_NaNOrInfinite_Throws();
+        testConversion_PrecisionTolerance();
+        testConversion_InstanceMethod();
+        testConversion_DemonstrateOverload();
 
-        System.out.println("All UC4 tests passed.");
+        System.out.println("All UC5 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -367,9 +382,174 @@ public class QuantityMeasurementAppTest {
         );
     }
 
+    private static void testConversion_FeetToInches() {
+        assertDoubleEquals(
+                12.0,
+                QuantityMeasurementApp.convert(1.0, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected 1.0 feet to convert to 12.0 inches."
+        );
+    }
+
+    private static void testConversion_InchesToFeet() {
+        assertDoubleEquals(
+                2.0,
+                QuantityMeasurementApp.convert(24.0, QuantityMeasurementApp.LengthUnit.INCHES,
+                        QuantityMeasurementApp.LengthUnit.FEET),
+                "Expected 24.0 inches to convert to 2.0 feet."
+        );
+    }
+
+    private static void testConversion_YardsToInches() {
+        assertDoubleEquals(
+                36.0,
+                QuantityMeasurementApp.convert(1.0, QuantityMeasurementApp.LengthUnit.YARDS,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected 1.0 yard to convert to 36.0 inches."
+        );
+    }
+
+    private static void testConversion_InchesToYards() {
+        assertDoubleEquals(
+                2.0,
+                QuantityMeasurementApp.convert(72.0, QuantityMeasurementApp.LengthUnit.INCHES,
+                        QuantityMeasurementApp.LengthUnit.YARDS),
+                "Expected 72.0 inches to convert to 2.0 yards."
+        );
+    }
+
+    private static void testConversion_CentimetersToInches() {
+        assertDoubleEquals(
+                1.0,
+                QuantityMeasurementApp.convert(2.54, QuantityMeasurementApp.LengthUnit.CENTIMETERS,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected 2.54 centimeters to convert to about 1.0 inch."
+        );
+    }
+
+    private static void testConversion_FeetToYard() {
+        assertDoubleEquals(
+                2.0,
+                QuantityMeasurementApp.convert(6.0, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.YARDS),
+                "Expected 6.0 feet to convert to 2.0 yards."
+        );
+    }
+
+    private static void testConversion_RoundTrip_PreservesValue() {
+        double originalValue = 5.75;
+        double convertedValue = QuantityMeasurementApp.convert(
+                originalValue,
+                QuantityMeasurementApp.LengthUnit.YARDS,
+                QuantityMeasurementApp.LengthUnit.CENTIMETERS
+        );
+        double roundTripValue = QuantityMeasurementApp.convert(
+                convertedValue,
+                QuantityMeasurementApp.LengthUnit.CENTIMETERS,
+                QuantityMeasurementApp.LengthUnit.YARDS
+        );
+
+        assertDoubleEquals(
+                originalValue,
+                roundTripValue,
+                "Expected round-trip conversion to preserve the original value."
+        );
+    }
+
+    private static void testConversion_ZeroValue() {
+        assertDoubleEquals(
+                0.0,
+                QuantityMeasurementApp.convert(0.0, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected zero conversion to remain zero."
+        );
+    }
+
+    private static void testConversion_NegativeValue() {
+        assertDoubleEquals(
+                -12.0,
+                QuantityMeasurementApp.convert(-1.0, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected negative values to preserve sign during conversion."
+        );
+    }
+
+    private static void testConversion_SameUnit() {
+        assertDoubleEquals(
+                5.0,
+                QuantityMeasurementApp.convert(5.0, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.FEET),
+                "Expected same-unit conversion to return the original value."
+        );
+    }
+
+    private static void testConversion_InvalidUnit_Throws() {
+        assertThrows(
+                () -> QuantityMeasurementApp.convert(1.0, null, QuantityMeasurementApp.LengthUnit.FEET),
+                "Expected a null source unit to be rejected."
+        );
+        assertThrows(
+                () -> QuantityMeasurementApp.convert(1.0, QuantityMeasurementApp.LengthUnit.FEET, null),
+                "Expected a null target unit to be rejected."
+        );
+    }
+
+    private static void testConversion_NaNOrInfinite_Throws() {
+        assertThrows(
+                () -> QuantityMeasurementApp.convert(Double.NaN, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected NaN values to be rejected."
+        );
+        assertThrows(
+                () -> QuantityMeasurementApp.convert(Double.POSITIVE_INFINITY, QuantityMeasurementApp.LengthUnit.FEET,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected infinite values to be rejected."
+        );
+    }
+
+    private static void testConversion_PrecisionTolerance() {
+        assertDoubleEquals(
+                0.0833333333,
+                QuantityMeasurementApp.convert(1.0, QuantityMeasurementApp.LengthUnit.INCHES,
+                        QuantityMeasurementApp.LengthUnit.FEET),
+                "Expected inch-to-feet conversion to stay within precision tolerance."
+        );
+    }
+
+    private static void testConversion_InstanceMethod() {
+        QuantityMeasurementApp.QuantityLength length =
+                new QuantityMeasurementApp.QuantityLength(3.0, QuantityMeasurementApp.LengthUnit.FEET);
+        QuantityMeasurementApp.QuantityLength converted =
+                length.convertTo(QuantityMeasurementApp.LengthUnit.INCHES);
+
+        assertDoubleEquals(36.0, converted.getValue(), "Expected instance conversion to return 36.0 inches.");
+        assertCondition(
+                converted.getUnit() == QuantityMeasurementApp.LengthUnit.INCHES,
+                "Expected instance conversion to return the requested target unit."
+        );
+    }
+
+    private static void testConversion_DemonstrateOverload() {
+        QuantityMeasurementApp.QuantityLength length =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.YARDS);
+
+        assertDoubleEquals(
+                36.0,
+                QuantityMeasurementApp.demonstrateLengthConversion(length,
+                        QuantityMeasurementApp.LengthUnit.INCHES),
+                "Expected overloaded demonstration method to convert an existing quantity."
+        );
+    }
+
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
+        }
+    }
+
+    private static void assertDoubleEquals(double expected, double actual, String message) {
+        if (Math.abs(expected - actual) > 1e-6) {
+            throw new AssertionError(message + " Expected: " + expected + ", Actual: " + actual);
         }
     }
 
