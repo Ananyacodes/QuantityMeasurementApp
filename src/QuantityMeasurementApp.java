@@ -1,29 +1,55 @@
 public class QuantityMeasurementApp {
 
-    private static final double INCHES_PER_FOOT = 12.0;
-
     public static boolean areFeetEqual(double firstValue, double secondValue) {
-        return new Feet(firstValue).equals(new Feet(secondValue));
+        return new QuantityLength(firstValue, LengthUnit.FEET)
+                .equals(new QuantityLength(secondValue, LengthUnit.FEET));
     }
 
     public static boolean areInchesEqual(double firstValue, double secondValue) {
-        return new Inches(firstValue).equals(new Inches(secondValue));
+        return new QuantityLength(firstValue, LengthUnit.INCHES)
+                .equals(new QuantityLength(secondValue, LengthUnit.INCHES));
     }
 
     public static boolean areFeetAndInchesEqual(double feetValue, double inchesValue) {
-        double convertedFeetValue = feetValue * INCHES_PER_FOOT;
-        return Double.compare(convertedFeetValue, inchesValue) == 0;
+        return new QuantityLength(feetValue, LengthUnit.FEET)
+                .equals(new QuantityLength(inchesValue, LengthUnit.INCHES));
     }
 
-    public static final class Feet {
-        private final double value;
+    public enum LengthUnit {
+        FEET(1.0),
+        INCHES(1.0 / 12.0);
 
-        public Feet(double value) {
+        private final double conversionFactorToFeet;
+
+        LengthUnit(double conversionFactorToFeet) {
+            this.conversionFactorToFeet = conversionFactorToFeet;
+        }
+
+        public double toFeet(double value) {
+            return value * conversionFactorToFeet;
+        }
+    }
+
+    public static final class QuantityLength {
+        private final double value;
+        private final LengthUnit unit;
+
+        public QuantityLength(double value, LengthUnit unit) {
+            validateValue(value);
+            if (unit == null) {
+                throw new IllegalArgumentException("Unit cannot be null.");
+            }
+
             this.value = value;
+            this.unit = unit;
         }
 
         public double getValue() {
             return value;
+        }
+
+        public LengthUnit getUnit() {
+            return unit;
         }
 
         @Override
@@ -35,43 +61,24 @@ public class QuantityMeasurementApp {
                 return false;
             }
 
-            Feet feet = (Feet) obj;
-            return Double.compare(value, feet.value) == 0;
+            QuantityLength quantityLength = (QuantityLength) obj;
+            return Double.compare(unit.toFeet(value), quantityLength.unit.toFeet(quantityLength.value)) == 0;
         }
 
         @Override
         public int hashCode() {
-            return Double.hashCode(value);
-        }
-    }
-
-    public static final class Inches {
-        private final double value;
-
-        public Inches(double value) {
-            this.value = value;
-        }
-
-        public double getValue() {
-            return value;
+            return Double.hashCode(unit.toFeet(value));
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-
-            Inches inches = (Inches) obj;
-            return Double.compare(value, inches.value) == 0;
+        public String toString() {
+            return "Quantity(" + value + ", \"" + unit.name().toLowerCase() + "\")";
         }
 
-        @Override
-        public int hashCode() {
-            return Double.hashCode(value);
+        private static void validateValue(double value) {
+            if (Double.isNaN(value) || Double.isInfinite(value)) {
+                throw new IllegalArgumentException("Value must be a finite number.");
+            }
         }
     }
 }

@@ -1,133 +1,172 @@
 public class QuantityMeasurementAppTest {
 
     public static void main(String[] args) {
-        testFeetEquality_SameValue();
-        testFeetEquality_DifferentValue();
-        testFeetEquality_NullComparison();
-        testFeetEquality_NonNumericInput();
-        testFeetEquality_SameReference();
-        testInchesEquality_SameValue();
-        testInchesEquality_DifferentValue();
-        testInchesEquality_NullComparison();
-        testInchesEquality_NonNumericInput();
-        testInchesEquality_SameReference();
-        testFeetAndInchesEquality_EquivalentValues();
-        testFeetAndInchesEquality_DifferentValues();
+        testEquality_FeetToFeet_SameValue();
+        testEquality_InchToInch_SameValue();
+        testEquality_FeetToInch_EquivalentValue();
+        testEquality_InchToFeet_EquivalentValue();
+        testEquality_FeetToFeet_DifferentValue();
+        testEquality_InchToInch_DifferentValue();
+        testEquality_InvalidValue();
+        testEquality_NullUnit();
+        testEquality_SameReference();
+        testEquality_NullComparison();
+        testEquality_NonQuantityComparison();
+        testBackwardCompatibility_FeetMethod();
+        testBackwardCompatibility_InchesMethod();
+        testBackwardCompatibility_FeetAndInchesMethod();
 
-        System.out.println("All UC2 tests passed.");
+        System.out.println("All UC3 tests passed.");
     }
 
-    private static void testFeetEquality_SameValue() {
-        QuantityMeasurementApp.Feet firstValue = new QuantityMeasurementApp.Feet(1.0);
-        QuantityMeasurementApp.Feet secondValue = new QuantityMeasurementApp.Feet(1.0);
+    private static void testEquality_FeetToFeet_SameValue() {
+        QuantityMeasurementApp.QuantityLength firstValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
+        QuantityMeasurementApp.QuantityLength secondValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
 
         assertCondition(
                 firstValue.equals(secondValue),
-                "Expected 1.0 ft to be equal to 1.0 ft."
+                "Expected Quantity(1.0, \"feet\") to equal Quantity(1.0, \"feet\")."
         );
     }
 
-    private static void testFeetEquality_DifferentValue() {
-        QuantityMeasurementApp.Feet firstValue = new QuantityMeasurementApp.Feet(1.0);
-        QuantityMeasurementApp.Feet secondValue = new QuantityMeasurementApp.Feet(2.0);
-
-        assertCondition(
-                !firstValue.equals(secondValue),
-                "Expected 1.0 ft to not be equal to 2.0 ft."
-        );
-    }
-
-    private static void testFeetEquality_NullComparison() {
-        QuantityMeasurementApp.Feet value = new QuantityMeasurementApp.Feet(1.0);
-
-        assertCondition(
-                !value.equals(null),
-                "Expected a Feet value to not be equal to null."
-        );
-    }
-
-    private static void testFeetEquality_NonNumericInput() {
-        QuantityMeasurementApp.Feet value = new QuantityMeasurementApp.Feet(1.0);
-
-        assertCondition(
-                !value.equals("non-numeric"),
-                "Expected a Feet value to not be equal to a non-Feet object."
-        );
-    }
-
-    private static void testFeetEquality_SameReference() {
-        QuantityMeasurementApp.Feet value = new QuantityMeasurementApp.Feet(1.0);
-
-        assertCondition(
-                value.equals(value),
-                "Expected a Feet value to be equal to itself."
-        );
-    }
-
-    private static void testInchesEquality_SameValue() {
-        QuantityMeasurementApp.Inches firstValue = new QuantityMeasurementApp.Inches(1.0);
-        QuantityMeasurementApp.Inches secondValue = new QuantityMeasurementApp.Inches(1.0);
+    private static void testEquality_InchToInch_SameValue() {
+        QuantityMeasurementApp.QuantityLength firstValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.INCHES);
+        QuantityMeasurementApp.QuantityLength secondValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.INCHES);
 
         assertCondition(
                 firstValue.equals(secondValue),
-                "Expected 1.0 inch to be equal to 1.0 inch."
+                "Expected Quantity(1.0, \"inches\") to equal Quantity(1.0, \"inches\")."
         );
     }
 
-    private static void testInchesEquality_DifferentValue() {
-        QuantityMeasurementApp.Inches firstValue = new QuantityMeasurementApp.Inches(1.0);
-        QuantityMeasurementApp.Inches secondValue = new QuantityMeasurementApp.Inches(2.0);
+    private static void testEquality_FeetToInch_EquivalentValue() {
+        QuantityMeasurementApp.QuantityLength feetValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
+        QuantityMeasurementApp.QuantityLength inchValue =
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES);
+
+        assertCondition(
+                feetValue.equals(inchValue),
+                "Expected Quantity(1.0, \"feet\") to equal Quantity(12.0, \"inches\")."
+        );
+    }
+
+    private static void testEquality_InchToFeet_EquivalentValue() {
+        QuantityMeasurementApp.QuantityLength inchValue =
+                new QuantityMeasurementApp.QuantityLength(12.0, QuantityMeasurementApp.LengthUnit.INCHES);
+        QuantityMeasurementApp.QuantityLength feetValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
+
+        assertCondition(
+                inchValue.equals(feetValue),
+                "Expected Quantity(12.0, \"inches\") to equal Quantity(1.0, \"feet\")."
+        );
+    }
+
+    private static void testEquality_FeetToFeet_DifferentValue() {
+        QuantityMeasurementApp.QuantityLength firstValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
+        QuantityMeasurementApp.QuantityLength secondValue =
+                new QuantityMeasurementApp.QuantityLength(2.0, QuantityMeasurementApp.LengthUnit.FEET);
 
         assertCondition(
                 !firstValue.equals(secondValue),
-                "Expected 1.0 inch to not be equal to 2.0 inch."
+                "Expected Quantity(1.0, \"feet\") to not equal Quantity(2.0, \"feet\")."
         );
     }
 
-    private static void testInchesEquality_NullComparison() {
-        QuantityMeasurementApp.Inches value = new QuantityMeasurementApp.Inches(1.0);
+    private static void testEquality_InchToInch_DifferentValue() {
+        QuantityMeasurementApp.QuantityLength firstValue =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.INCHES);
+        QuantityMeasurementApp.QuantityLength secondValue =
+                new QuantityMeasurementApp.QuantityLength(2.0, QuantityMeasurementApp.LengthUnit.INCHES);
 
         assertCondition(
-                !value.equals(null),
-                "Expected an Inches value to not be equal to null."
+                !firstValue.equals(secondValue),
+                "Expected Quantity(1.0, \"inches\") to not equal Quantity(2.0, \"inches\")."
         );
     }
 
-    private static void testInchesEquality_NonNumericInput() {
-        QuantityMeasurementApp.Inches value = new QuantityMeasurementApp.Inches(1.0);
-
-        assertCondition(
-                !value.equals("non-numeric"),
-                "Expected an Inches value to not be equal to a non-Inches object."
+    private static void testEquality_InvalidValue() {
+        assertThrows(
+                () -> new QuantityMeasurementApp.QuantityLength(Double.NaN, QuantityMeasurementApp.LengthUnit.FEET),
+                "Expected invalid numeric values to be rejected."
         );
     }
 
-    private static void testInchesEquality_SameReference() {
-        QuantityMeasurementApp.Inches value = new QuantityMeasurementApp.Inches(1.0);
+    private static void testEquality_NullUnit() {
+        assertThrows(
+                () -> new QuantityMeasurementApp.QuantityLength(1.0, null),
+                "Expected a null unit to be rejected."
+        );
+    }
+
+    private static void testEquality_SameReference() {
+        QuantityMeasurementApp.QuantityLength value =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
 
         assertCondition(
                 value.equals(value),
-                "Expected an Inches value to be equal to itself."
+                "Expected a quantity to be equal to itself."
         );
     }
 
-    private static void testFeetAndInchesEquality_EquivalentValues() {
+    private static void testEquality_NullComparison() {
+        QuantityMeasurementApp.QuantityLength value =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
+
+        assertCondition(
+                !value.equals(null),
+                "Expected a quantity to not be equal to null."
+        );
+    }
+
+    private static void testEquality_NonQuantityComparison() {
+        QuantityMeasurementApp.QuantityLength value =
+                new QuantityMeasurementApp.QuantityLength(1.0, QuantityMeasurementApp.LengthUnit.FEET);
+
+        assertCondition(
+                !value.equals("non-numeric"),
+                "Expected a quantity to not be equal to a non-quantity object."
+        );
+    }
+
+    private static void testBackwardCompatibility_FeetMethod() {
+        assertCondition(
+                QuantityMeasurementApp.areFeetEqual(1.0, 1.0),
+                "Expected the UC1 feet equality method to remain supported."
+        );
+    }
+
+    private static void testBackwardCompatibility_InchesMethod() {
+        assertCondition(
+                QuantityMeasurementApp.areInchesEqual(1.0, 1.0),
+                "Expected the UC2 inches equality method to remain supported."
+        );
+    }
+
+    private static void testBackwardCompatibility_FeetAndInchesMethod() {
         assertCondition(
                 QuantityMeasurementApp.areFeetAndInchesEqual(1.0, 12.0),
-                "Expected 1.0 ft to be equal to 12.0 inch."
-        );
-    }
-
-    private static void testFeetAndInchesEquality_DifferentValues() {
-        assertCondition(
-                !QuantityMeasurementApp.areFeetAndInchesEqual(1.0, 11.0),
-                "Expected 1.0 ft to not be equal to 11.0 inch."
+                "Expected the UC2 feet-to-inches equality method to remain supported."
         );
     }
 
     private static void assertCondition(boolean condition, String message) {
         if (!condition) {
             throw new AssertionError(message);
+        }
+    }
+
+    private static void assertThrows(Runnable runnable, String message) {
+        try {
+            runnable.run();
+            throw new AssertionError(message);
+        } catch (IllegalArgumentException ignored) {
         }
     }
 }
