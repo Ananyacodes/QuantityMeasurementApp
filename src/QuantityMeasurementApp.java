@@ -55,11 +55,49 @@ public class QuantityMeasurementApp {
                 .equals(new QuantityLength(secondValue, secondUnit));
     }
 
+    public static QuantityLength add(QuantityLength firstLength, QuantityLength secondLength) {
+        if (firstLength == null || secondLength == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        return add(firstLength, secondLength, firstLength.getUnit());
+    }
+
+    public static QuantityLength add(
+            QuantityLength firstLength,
+            QuantityLength secondLength,
+            LengthUnit targetUnit
+    ) {
+        if (firstLength == null || secondLength == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        validateUnit(targetUnit, "Target unit cannot be null.");
+
+        double firstValueInFeet = firstLength.getUnit().toFeet(firstLength.getValue());
+        double secondValueInFeet = secondLength.getUnit().toFeet(secondLength.getValue());
+        double sumInFeet = firstValueInFeet + secondValueInFeet;
+        double resultValue = targetUnit.fromFeet(sumInFeet);
+        return new QuantityLength(resultValue, targetUnit);
+    }
+
+    public static QuantityLength add(
+            double firstValue,
+            LengthUnit firstUnit,
+            double secondValue,
+            LengthUnit secondUnit,
+            LengthUnit targetUnit
+    ) {
+        return add(
+                new QuantityLength(firstValue, firstUnit),
+                new QuantityLength(secondValue, secondUnit),
+                targetUnit
+        );
+    }
+
     public enum LengthUnit {
         FEET(1.0),
         INCHES(1.0 / 12.0),
         YARDS(3.0),
-        CENTIMETERS(0.393701 / 12.0);
+        CENTIMETERS((1.0 / 2.54) / 12.0);
 
         private final double conversionFactorToFeet;
 
@@ -102,6 +140,14 @@ public class QuantityMeasurementApp {
             validateUnit(targetUnit, "Target unit cannot be null.");
             double convertedValue = QuantityMeasurementApp.convert(value, unit, targetUnit);
             return new QuantityLength(convertedValue, targetUnit);
+        }
+
+        public QuantityLength add(QuantityLength other) {
+            return QuantityMeasurementApp.add(this, other, unit);
+        }
+
+        public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
+            return QuantityMeasurementApp.add(this, other, targetUnit);
         }
 
         @Override
