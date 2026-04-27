@@ -147,8 +147,57 @@ public class QuantityMeasurementAppTest {
         testEnumAsUnitCarrier_BehaviorEncapsulation();
         testTypeErasure_RuntimeSafety();
         testImmutability_GenericQuantity();
+        testEquality_LitreToLitre_SameValue();
+        testEquality_LitreToLitre_DifferentValue();
+        testEquality_LitreToMillilitre_EquivalentValue();
+        testEquality_MillilitreToLitre_EquivalentValue();
+        testEquality_LitreToGallon_EquivalentValue();
+        testEquality_GallonToLitre_EquivalentValue();
+        testEquality_VolumeVsLength_Incompatible();
+        testEquality_VolumeVsWeight_Incompatible();
+        testEquality_VolumeNullComparison();
+        testEquality_VolumeSameReference();
+        testEquality_VolumeNullUnit();
+        testEquality_VolumeTransitiveProperty();
+        testEquality_VolumeZeroValue();
+        testEquality_NegativeVolume();
+        testEquality_LargeVolumeValue();
+        testEquality_SmallVolumeValue();
+        testConversion_LitreToMillilitre();
+        testConversion_MillilitreToLitre();
+        testConversion_GallonToLitre();
+        testConversion_LitreToGallon();
+        testConversion_MillilitreToGallon();
+        testConversion_VolumeSameUnit();
+        testConversion_VolumeZeroValue();
+        testConversion_VolumeNegativeValue();
+        testConversion_VolumeRoundTrip();
+        testAddition_SameUnit_LitrePlusLitre();
+        testAddition_SameUnit_MillilitrePlusMillilitre();
+        testAddition_CrossUnit_LitrePlusMillilitre();
+        testAddition_CrossUnit_MillilitrePlusLitre();
+        testAddition_CrossUnit_GallonPlusLitre();
+        testAddition_ExplicitTargetUnit_Litre();
+        testAddition_ExplicitTargetUnit_Millilitre();
+        testAddition_ExplicitTargetUnit_Gallon();
+        testAddition_VolumeCommutativity();
+        testAddition_VolumeWithZero();
+        testAddition_VolumeNegativeValues();
+        testAddition_VolumeLargeValues();
+        testAddition_VolumeSmallValues();
+        testVolumeUnitEnum_LitreConstant();
+        testVolumeUnitEnum_MillilitreConstant();
+        testVolumeUnitEnum_GallonConstant();
+        testConvertToBaseUnit_LitreToLitre();
+        testConvertToBaseUnit_MillilitreToLitre();
+        testConvertToBaseUnit_GallonToLitre();
+        testConvertFromBaseUnit_LitreToLitre();
+        testConvertFromBaseUnit_LitreToMillilitre();
+        testConvertFromBaseUnit_LitreToGallon();
+        testGenericQuantity_VolumeOperations_Consistency();
+        testScalability_VolumeIntegration();
 
-        System.out.println("All UC10 tests passed.");
+        System.out.println("All UC11 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -1591,6 +1640,396 @@ public class QuantityMeasurementAppTest {
                 "Expected generic Quantity to remain immutable after conversion.");
         assertGenericQuantityEquals(12.0, LengthUnit.INCHES, converted,
                 "Expected generic Quantity conversion to return a new value object.");
+    }
+
+    private static void testEquality_LitreToLitre_SameValue() {
+        assertCondition(
+                new Quantity<>(1.0, VolumeUnit.LITRE).equals(new Quantity<>(1.0, VolumeUnit.LITRE)),
+                "Expected identical litre quantities to be equal."
+        );
+    }
+
+    private static void testEquality_LitreToLitre_DifferentValue() {
+        assertCondition(
+                !new Quantity<>(1.0, VolumeUnit.LITRE).equals(new Quantity<>(2.0, VolumeUnit.LITRE)),
+                "Expected different litre quantities to not be equal."
+        );
+    }
+
+    private static void testEquality_LitreToMillilitre_EquivalentValue() {
+        assertCondition(
+                new Quantity<>(1.0, VolumeUnit.LITRE).equals(new Quantity<>(1000.0, VolumeUnit.MILLILITRE)),
+                "Expected 1 litre to equal 1000 millilitres."
+        );
+    }
+
+    private static void testEquality_MillilitreToLitre_EquivalentValue() {
+        assertCondition(
+                new Quantity<>(1000.0, VolumeUnit.MILLILITRE).equals(new Quantity<>(1.0, VolumeUnit.LITRE)),
+                "Expected 1000 millilitres to equal 1 litre."
+        );
+    }
+
+    private static void testEquality_LitreToGallon_EquivalentValue() {
+        assertCondition(
+                new Quantity<>(1.0, VolumeUnit.LITRE).equals(new Quantity<>(0.264172176857989, VolumeUnit.GALLON)),
+                "Expected 1 litre to equal about 0.264172 gallons."
+        );
+    }
+
+    private static void testEquality_GallonToLitre_EquivalentValue() {
+        assertCondition(
+                new Quantity<>(1.0, VolumeUnit.GALLON).equals(new Quantity<>(3.78541, VolumeUnit.LITRE)),
+                "Expected 1 gallon to equal about 3.78541 litres."
+        );
+    }
+
+    private static void testEquality_VolumeVsLength_Incompatible() {
+        assertCondition(
+                !new Quantity<>(1.0, VolumeUnit.LITRE).equals(new Quantity<>(1.0, LengthUnit.FEET)),
+                "Expected volume and length quantities to be incomparable."
+        );
+    }
+
+    private static void testEquality_VolumeVsWeight_Incompatible() {
+        assertCondition(
+                !new Quantity<>(1.0, VolumeUnit.LITRE).equals(new Quantity<>(1.0, WeightUnit.KILOGRAM)),
+                "Expected volume and weight quantities to be incomparable."
+        );
+    }
+
+    private static void testEquality_VolumeNullComparison() {
+        assertCondition(
+                !new Quantity<>(1.0, VolumeUnit.LITRE).equals(null),
+                "Expected a volume quantity to not equal null."
+        );
+    }
+
+    private static void testEquality_VolumeSameReference() {
+        Quantity<VolumeUnit> volume = new Quantity<>(1.0, VolumeUnit.LITRE);
+        assertCondition(volume.equals(volume), "Expected a volume quantity to equal itself.");
+    }
+
+    private static void testEquality_VolumeNullUnit() {
+        assertThrows(
+                () -> new Quantity<>(1.0, (VolumeUnit) null),
+                "Expected generic Quantity to reject null volume units."
+        );
+    }
+
+    private static void testEquality_VolumeTransitiveProperty() {
+        Quantity<VolumeUnit> litres = new Quantity<>(1.0, VolumeUnit.LITRE);
+        Quantity<VolumeUnit> millilitres = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+        Quantity<VolumeUnit> gallons = new Quantity<>(0.264172176857989, VolumeUnit.GALLON);
+
+        assertCondition(
+                litres.equals(millilitres) && millilitres.equals(gallons) && litres.equals(gallons),
+                "Expected volume equality to be transitive across units."
+        );
+    }
+
+    private static void testEquality_VolumeZeroValue() {
+        assertCondition(
+                new Quantity<>(0.0, VolumeUnit.LITRE).equals(new Quantity<>(0.0, VolumeUnit.MILLILITRE)),
+                "Expected zero volume values to be equal across units."
+        );
+    }
+
+    private static void testEquality_NegativeVolume() {
+        assertCondition(
+                new Quantity<>(-1.0, VolumeUnit.LITRE).equals(new Quantity<>(-1000.0, VolumeUnit.MILLILITRE)),
+                "Expected negative volume values to compare correctly across units."
+        );
+    }
+
+    private static void testEquality_LargeVolumeValue() {
+        assertCondition(
+                new Quantity<>(1000000.0, VolumeUnit.MILLILITRE).equals(new Quantity<>(1000.0, VolumeUnit.LITRE)),
+                "Expected large volume values to maintain precision across units."
+        );
+    }
+
+    private static void testEquality_SmallVolumeValue() {
+        assertCondition(
+                new Quantity<>(0.001, VolumeUnit.LITRE).equals(new Quantity<>(1.0, VolumeUnit.MILLILITRE)),
+                "Expected small volume values to maintain precision across units."
+        );
+    }
+
+    private static void testConversion_LitreToMillilitre() {
+        assertGenericQuantityEquals(
+                1000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(1.0, VolumeUnit.LITRE).convertTo(VolumeUnit.MILLILITRE),
+                "Expected litre to millilitre conversion to work."
+        );
+    }
+
+    private static void testConversion_MillilitreToLitre() {
+        assertGenericQuantityEquals(
+                1.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(1000.0, VolumeUnit.MILLILITRE).convertTo(VolumeUnit.LITRE),
+                "Expected millilitre to litre conversion to work."
+        );
+    }
+
+    private static void testConversion_GallonToLitre() {
+        assertGenericQuantityEquals(
+                3.78541,
+                VolumeUnit.LITRE,
+                new Quantity<>(1.0, VolumeUnit.GALLON).convertTo(VolumeUnit.LITRE),
+                "Expected gallon to litre conversion to work."
+        );
+    }
+
+    private static void testConversion_LitreToGallon() {
+        assertGenericQuantityEquals(
+                1.0,
+                VolumeUnit.GALLON,
+                new Quantity<>(3.78541, VolumeUnit.LITRE).convertTo(VolumeUnit.GALLON),
+                "Expected litre to gallon conversion to work."
+        );
+    }
+
+    private static void testConversion_MillilitreToGallon() {
+        assertGenericQuantityEquals(
+                0.264172176857989,
+                VolumeUnit.GALLON,
+                new Quantity<>(1000.0, VolumeUnit.MILLILITRE).convertTo(VolumeUnit.GALLON),
+                "Expected millilitre to gallon conversion to work."
+        );
+    }
+
+    private static void testConversion_VolumeSameUnit() {
+        assertGenericQuantityEquals(
+                5.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(5.0, VolumeUnit.LITRE).convertTo(VolumeUnit.LITRE),
+                "Expected same-unit volume conversion to preserve value."
+        );
+    }
+
+    private static void testConversion_VolumeZeroValue() {
+        assertGenericQuantityEquals(
+                0.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(0.0, VolumeUnit.LITRE).convertTo(VolumeUnit.MILLILITRE),
+                "Expected zero volume conversion to preserve zero."
+        );
+    }
+
+    private static void testConversion_VolumeNegativeValue() {
+        assertGenericQuantityEquals(
+                -1000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(-1.0, VolumeUnit.LITRE).convertTo(VolumeUnit.MILLILITRE),
+                "Expected negative volume conversion to preserve sign."
+        );
+    }
+
+    private static void testConversion_VolumeRoundTrip() {
+        Quantity<VolumeUnit> roundTrip = new Quantity<>(1.5, VolumeUnit.LITRE)
+                .convertTo(VolumeUnit.MILLILITRE)
+                .convertTo(VolumeUnit.LITRE);
+
+        assertGenericQuantityEquals(1.5, VolumeUnit.LITRE, roundTrip,
+                "Expected volume round-trip conversion to preserve value.");
+    }
+
+    private static void testAddition_SameUnit_LitrePlusLitre() {
+        assertGenericQuantityEquals(
+                3.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(1.0, VolumeUnit.LITRE).add(new Quantity<>(2.0, VolumeUnit.LITRE)),
+                "Expected litre addition to work without conversion."
+        );
+    }
+
+    private static void testAddition_SameUnit_MillilitrePlusMillilitre() {
+        assertGenericQuantityEquals(
+                1000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(500.0, VolumeUnit.MILLILITRE).add(new Quantity<>(500.0, VolumeUnit.MILLILITRE)),
+                "Expected millilitre addition to work without conversion."
+        );
+    }
+
+    private static void testAddition_CrossUnit_LitrePlusMillilitre() {
+        assertGenericQuantityEquals(
+                2.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(1.0, VolumeUnit.LITRE).add(new Quantity<>(1000.0, VolumeUnit.MILLILITRE)),
+                "Expected litre plus millilitre addition to convert correctly."
+        );
+    }
+
+    private static void testAddition_CrossUnit_MillilitrePlusLitre() {
+        assertGenericQuantityEquals(
+                2000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(1000.0, VolumeUnit.MILLILITRE).add(new Quantity<>(1.0, VolumeUnit.LITRE)),
+                "Expected millilitre plus litre addition to convert correctly."
+        );
+    }
+
+    private static void testAddition_CrossUnit_GallonPlusLitre() {
+        assertGenericQuantityEquals(
+                2.0,
+                VolumeUnit.GALLON,
+                new Quantity<>(1.0, VolumeUnit.GALLON).add(new Quantity<>(3.78541, VolumeUnit.LITRE)),
+                "Expected gallon plus litre addition to convert correctly."
+        );
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Litre() {
+        assertGenericQuantityEquals(
+                2.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(1.0, VolumeUnit.LITRE)
+                        .add(new Quantity<>(1000.0, VolumeUnit.MILLILITRE), VolumeUnit.LITRE),
+                "Expected explicit target litre addition to work."
+        );
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Millilitre() {
+        assertGenericQuantityEquals(
+                2000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(1.0, VolumeUnit.LITRE)
+                        .add(new Quantity<>(1000.0, VolumeUnit.MILLILITRE), VolumeUnit.MILLILITRE),
+                "Expected explicit target millilitre addition to work."
+        );
+    }
+
+    private static void testAddition_ExplicitTargetUnit_Gallon() {
+        assertGenericQuantityEquals(
+                2.0,
+                VolumeUnit.GALLON,
+                new Quantity<>(3.78541, VolumeUnit.LITRE)
+                        .add(new Quantity<>(3.78541, VolumeUnit.LITRE), VolumeUnit.GALLON),
+                "Expected explicit target gallon addition to work."
+        );
+    }
+
+    private static void testAddition_VolumeCommutativity() {
+        Quantity<VolumeUnit> firstResult = new Quantity<>(1.0, VolumeUnit.LITRE)
+                .add(new Quantity<>(1000.0, VolumeUnit.MILLILITRE), VolumeUnit.MILLILITRE);
+        Quantity<VolumeUnit> secondResult = new Quantity<>(1000.0, VolumeUnit.MILLILITRE)
+                .add(new Quantity<>(1.0, VolumeUnit.LITRE), VolumeUnit.MILLILITRE);
+
+        assertCondition(firstResult.equals(secondResult),
+                "Expected volume addition to be commutative for the same target unit.");
+    }
+
+    private static void testAddition_VolumeWithZero() {
+        assertGenericQuantityEquals(
+                5.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(5.0, VolumeUnit.LITRE).add(new Quantity<>(0.0, VolumeUnit.MILLILITRE)),
+                "Expected adding zero volume to preserve the original value."
+        );
+    }
+
+    private static void testAddition_VolumeNegativeValues() {
+        assertGenericQuantityEquals(
+                3.0,
+                VolumeUnit.LITRE,
+                new Quantity<>(5.0, VolumeUnit.LITRE).add(new Quantity<>(-2000.0, VolumeUnit.MILLILITRE)),
+                "Expected volume addition to handle negative values."
+        );
+    }
+
+    private static void testAddition_VolumeLargeValues() {
+        assertGenericQuantityEquals(
+                2e6,
+                VolumeUnit.LITRE,
+                new Quantity<>(1e6, VolumeUnit.LITRE).add(new Quantity<>(1e6, VolumeUnit.LITRE)),
+                "Expected large volume additions to remain accurate."
+        );
+    }
+
+    private static void testAddition_VolumeSmallValues() {
+        assertGenericQuantityEquals(
+                0.003,
+                VolumeUnit.LITRE,
+                new Quantity<>(0.001, VolumeUnit.LITRE).add(new Quantity<>(0.002, VolumeUnit.LITRE)),
+                "Expected small volume additions to remain accurate."
+        );
+    }
+
+    private static void testVolumeUnitEnum_LitreConstant() {
+        assertDoubleEquals(1.0, VolumeUnit.LITRE.getConversionFactor(),
+                "Expected litre conversion factor to be 1.0.");
+    }
+
+    private static void testVolumeUnitEnum_MillilitreConstant() {
+        assertDoubleEquals(0.001, VolumeUnit.MILLILITRE.getConversionFactor(),
+                "Expected millilitre conversion factor to be 0.001.");
+    }
+
+    private static void testVolumeUnitEnum_GallonConstant() {
+        assertDoubleEquals(3.78541, VolumeUnit.GALLON.getConversionFactor(),
+                "Expected gallon conversion factor to be 3.78541.");
+    }
+
+    private static void testConvertToBaseUnit_LitreToLitre() {
+        assertDoubleEquals(5.0, VolumeUnit.LITRE.convertToBaseUnit(5.0),
+                "Expected litre base conversion to leave the value unchanged.");
+    }
+
+    private static void testConvertToBaseUnit_MillilitreToLitre() {
+        assertDoubleEquals(1.0, VolumeUnit.MILLILITRE.convertToBaseUnit(1000.0),
+                "Expected millilitres to convert to litres through the base-unit API.");
+    }
+
+    private static void testConvertToBaseUnit_GallonToLitre() {
+        assertDoubleEquals(3.78541, VolumeUnit.GALLON.convertToBaseUnit(1.0),
+                "Expected gallons to convert to litres through the base-unit API.");
+    }
+
+    private static void testConvertFromBaseUnit_LitreToLitre() {
+        assertDoubleEquals(2.0, VolumeUnit.LITRE.convertFromBaseUnit(2.0),
+                "Expected litre from-base conversion to leave the value unchanged.");
+    }
+
+    private static void testConvertFromBaseUnit_LitreToMillilitre() {
+        assertDoubleEquals(1000.0, VolumeUnit.MILLILITRE.convertFromBaseUnit(1.0),
+                "Expected litres to convert to millilitres through the base-unit API.");
+    }
+
+    private static void testConvertFromBaseUnit_LitreToGallon() {
+        assertDoubleEquals(1.0, VolumeUnit.GALLON.convertFromBaseUnit(3.78541),
+                "Expected litres to convert to gallons through the base-unit API.");
+    }
+
+    private static void testGenericQuantity_VolumeOperations_Consistency() {
+        assertGenericQuantityEquals(
+                1000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(1.0, VolumeUnit.LITRE).convertTo(VolumeUnit.MILLILITRE),
+                "Expected generic Quantity to work seamlessly with volume units."
+        );
+    }
+
+    private static void testScalability_VolumeIntegration() {
+        assertCondition(
+                QuantityMeasurementApp.demonstrateEquality(
+                        new Quantity<>(1.0, VolumeUnit.LITRE),
+                        new Quantity<>(1000.0, VolumeUnit.MILLILITRE)
+                ),
+                "Expected volume to integrate with the generic demonstration flow without code changes."
+        );
+        assertGenericQuantityEquals(
+                2.0,
+                VolumeUnit.LITRE,
+                QuantityMeasurementApp.demonstrateAddition(
+                        new Quantity<>(1.0, VolumeUnit.LITRE),
+                        new Quantity<>(1000.0, VolumeUnit.MILLILITRE),
+                        VolumeUnit.LITRE
+                ),
+                "Expected volume to integrate with the generic addition flow without code changes."
+        );
     }
 
     private static void assertCondition(boolean condition, String message) {

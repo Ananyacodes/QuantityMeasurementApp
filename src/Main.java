@@ -1,25 +1,22 @@
 public class Main {
     public static void main(String[] args) {
-        Quantity<LengthUnit> lengthOne = new Quantity<>(1.0, LengthUnit.FEET);
-        Quantity<LengthUnit> lengthTwo = new Quantity<>(12.0, LengthUnit.INCHES);
-        Quantity<WeightUnit> weightOne = new Quantity<>(1.0, WeightUnit.KILOGRAM);
-        Quantity<WeightUnit> weightTwo = new Quantity<>(1000.0, WeightUnit.GRAM);
+        Quantity<VolumeUnit> volumeOne = new Quantity<>(1.0, VolumeUnit.LITRE);
+        Quantity<VolumeUnit> volumeTwo = new Quantity<>(1000.0, VolumeUnit.MILLILITRE);
+        Quantity<VolumeUnit> volumeThree = new Quantity<>(1.0, VolumeUnit.GALLON);
 
-        System.out.println("Input: new Quantity<>(1.0, LengthUnit.FEET).equals(new Quantity<>(12.0, LengthUnit.INCHES))");
-        System.out.println("Output: " + lengthOne.equals(lengthTwo));
-        System.out.println("Input: new Quantity<>(1.0, LengthUnit.FEET).convertTo(LengthUnit.INCHES)");
-        System.out.println("Output: " + lengthOne.convertTo(LengthUnit.INCHES));
-        System.out.println("Input: new Quantity<>(1.0, LengthUnit.FEET).add(new Quantity<>(12.0, LengthUnit.INCHES), LengthUnit.FEET)");
-        System.out.println("Output: " + lengthOne.add(lengthTwo, LengthUnit.FEET));
-
-        System.out.println("Input: new Quantity<>(1.0, WeightUnit.KILOGRAM).equals(new Quantity<>(1000.0, WeightUnit.GRAM))");
-        System.out.println("Output: " + weightOne.equals(weightTwo));
-        System.out.println("Input: new Quantity<>(1.0, WeightUnit.KILOGRAM).convertTo(WeightUnit.GRAM)");
-        System.out.println("Output: " + weightOne.convertTo(WeightUnit.GRAM));
-        System.out.println("Input: new Quantity<>(1.0, WeightUnit.KILOGRAM).add(new Quantity<>(1000.0, WeightUnit.GRAM), WeightUnit.KILOGRAM)");
-        System.out.println("Output: " + weightOne.add(weightTwo, WeightUnit.KILOGRAM));
-
-        System.out.println("Input: new Quantity<>(1.0, LengthUnit.FEET).equals(new Quantity<>(1.0, WeightUnit.KILOGRAM))");
-        System.out.println("Output: " + lengthOne.equals(new Quantity<>(1.0, WeightUnit.KILOGRAM)));
+        System.out.println("Input: new Quantity<>(1.0, LITRE).equals(new Quantity<>(1000.0, MILLILITRE))");
+        System.out.println("Output: " + volumeOne.equals(volumeTwo));
+        System.out.println("Input: new Quantity<>(1.0, LITRE).convertTo(MILLILITRE)");
+        System.out.println("Output: " + volumeOne.convertTo(VolumeUnit.MILLILITRE));
+        System.out.println("Input: new Quantity<>(2.0, GALLON).convertTo(LITRE)");
+        System.out.println("Output: " + new Quantity<>(2.0, VolumeUnit.GALLON).convertTo(VolumeUnit.LITRE));
+        System.out.println("Input: new Quantity<>(1.0, LITRE).add(new Quantity<>(1000.0, MILLILITRE))");
+        System.out.println("Output: " + volumeOne.add(volumeTwo));
+        System.out.println("Input: new Quantity<>(1.0, GALLON).add(new Quantity<>(3.78541, LITRE), GALLON)");
+        System.out.println("Output: " + volumeThree.add(new Quantity<>(3.78541, VolumeUnit.LITRE), VolumeUnit.GALLON));
+        System.out.println("Input: new Quantity<>(1.0, LITRE).equals(new Quantity<>(1.0, FOOT))");
+        System.out.println("Output: " + volumeOne.equals(new Quantity<>(1.0, LengthUnit.FEET)));
+        System.out.println("Input: new Quantity<>(1.0, LITRE).equals(new Quantity<>(1.0, KILOGRAM))");
+        System.out.println("Output: " + volumeOne.equals(new Quantity<>(1.0, WeightUnit.KILOGRAM)));
     }
 }
