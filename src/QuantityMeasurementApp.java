@@ -21,8 +21,8 @@ public class QuantityMeasurementApp {
         validateUnit(sourceUnit, "Source unit cannot be null.");
         validateUnit(targetUnit, "Target unit cannot be null.");
 
-        double valueInFeet = sourceUnit.toFeet(value);
-        return targetUnit.fromFeet(valueInFeet);
+        double valueInFeet = sourceUnit.convertToBaseUnit(value);
+        return targetUnit.convertFromBaseUnit(valueInFeet);
     }
 
     public static double demonstrateLengthConversion(double value, LengthUnit sourceUnit, LengthUnit targetUnit) {
@@ -86,27 +86,6 @@ public class QuantityMeasurementApp {
         );
     }
 
-    public enum LengthUnit {
-        FEET(1.0),
-        INCHES(1.0 / 12.0),
-        YARDS(3.0),
-        CENTIMETERS((1.0 / 2.54) / 12.0);
-
-        private final double conversionFactorToFeet;
-
-        LengthUnit(double conversionFactorToFeet) {
-            this.conversionFactorToFeet = conversionFactorToFeet;
-        }
-
-        public double toFeet(double value) {
-            return value * conversionFactorToFeet;
-        }
-
-        public double fromFeet(double valueInFeet) {
-            return valueInFeet / conversionFactorToFeet;
-        }
-    }
-
     public static final class QuantityLength {
         private final double value;
         private final LengthUnit unit;
@@ -153,12 +132,14 @@ public class QuantityMeasurementApp {
             }
 
             QuantityLength quantityLength = (QuantityLength) obj;
-            return Math.abs(unit.toFeet(value) - quantityLength.unit.toFeet(quantityLength.value)) <= EPSILON;
+            return Math.abs(
+                    unit.convertToBaseUnit(value) - quantityLength.unit.convertToBaseUnit(quantityLength.value)
+            ) <= EPSILON;
         }
 
         @Override
         public int hashCode() {
-            long normalizedValue = Math.round(unit.toFeet(value) / EPSILON);
+            long normalizedValue = Math.round(unit.convertToBaseUnit(value) / EPSILON);
             return Long.hashCode(normalizedValue);
         }
 
@@ -174,10 +155,10 @@ public class QuantityMeasurementApp {
             QuantityLength secondLength,
             LengthUnit targetUnit
     ) {
-        double firstValueInFeet = firstLength.getUnit().toFeet(firstLength.getValue());
-        double secondValueInFeet = secondLength.getUnit().toFeet(secondLength.getValue());
+        double firstValueInFeet = firstLength.getUnit().convertToBaseUnit(firstLength.getValue());
+        double secondValueInFeet = secondLength.getUnit().convertToBaseUnit(secondLength.getValue());
         double sumInFeet = firstValueInFeet + secondValueInFeet;
-        double resultValue = targetUnit.fromFeet(sumInFeet);
+        double resultValue = targetUnit.convertFromBaseUnit(sumInFeet);
         return new QuantityLength(resultValue, targetUnit);
     }
 
