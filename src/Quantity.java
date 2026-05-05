@@ -56,7 +56,8 @@ public class Quantity<U extends IMeasurable> {
      * @return summed quantity in the requested target unit
      */
     public Quantity<U> add(Quantity<U> other, U targetUnit) {
-        return performBinaryOperation(other, targetUnit, ArithmeticOperation.ADDITION, false);
+        validateArithmeticOperands(other, targetUnit, true);
+        return createQuantityResult(other, targetUnit, ArithmeticOperation.ADDITION, false);
     }
 
     /**
@@ -77,7 +78,8 @@ public class Quantity<U extends IMeasurable> {
      * @return difference in the requested target unit
      */
     public Quantity<U> subtract(Quantity<U> other, U targetUnit) {
-        return performBinaryOperation(other, targetUnit, ArithmeticOperation.SUBTRACTION, true);
+        validateArithmeticOperands(other, targetUnit, true);
+        return createQuantityResult(other, targetUnit, ArithmeticOperation.SUBTRACTION, true);
     }
 
     /**
@@ -87,12 +89,8 @@ public class Quantity<U extends IMeasurable> {
      * @return dimensionless ratio
      */
     public double divide(Quantity<U> other) {
-        validateOperand(other);
-        double divisor = other.unit.convertToBaseUnit(other.value);
-        if (Math.abs(divisor) <= EPSILON) {
-            throw new ArithmeticException("Cannot divide by zero quantity.");
-        }
-        return unit.convertToBaseUnit(value) / divisor;
+        validateArithmeticOperands(other, null, false);
+        return performBaseArithmetic(other, ArithmeticOperation.DIVISION);
     }
 
     @Override
@@ -158,25 +156,31 @@ public class Quantity<U extends IMeasurable> {
         }
     }
 
-    private void validateOperand(Quantity<U> other) {
+    private void validateArithmeticOperands(Quantity<U> other, U targetUnit, boolean targetUnitRequired) {
+        validateQuantity(this);
         validateQuantity(other);
         validateSameCategory(other);
+        if (targetUnitRequired) {
+            validateCompatibleTargetUnit(targetUnit);
+        }
     }
 
-    private Quantity<U> performBinaryOperation(
+    private Quantity<U> createQuantityResult(
             Quantity<U> other,
             U targetUnit,
             ArithmeticOperation operation,
             boolean shouldRound
     ) {
-        validateOperand(other);
-        validateCompatibleTargetUnit(targetUnit);
-        double thisBaseValue = unit.convertToBaseUnit(value);
-        double otherBaseValue = other.unit.convertToBaseUnit(other.value);
-        double baseResult = operation.apply(thisBaseValue, otherBaseValue);
+        double baseResult = performBaseArithmetic(other, operation);
         double convertedValue = targetUnit.convertFromBaseUnit(baseResult);
         double normalizedValue = shouldRound ? roundToTwoDecimals(convertedValue) : convertedValue;
         return new Quantity<>(normalizedValue, targetUnit);
+    }
+
+    private double performBaseArithmetic(Quantity<U> other, ArithmeticOperation operation) {
+        double thisBaseValue = unit.convertToBaseUnit(value);
+        double otherBaseValue = other.unit.convertToBaseUnit(other.value);
+        return operation.apply(thisBaseValue, otherBaseValue);
     }
 
     private static double roundToTwoDecimals(double value) {
@@ -194,6 +198,15 @@ public class Quantity<U extends IMeasurable> {
             @Override
             double apply(double firstValue, double secondValue) {
                 return firstValue - secondValue;
+            }
+        },
+        DIVISION {
+            @Override
+            double apply(double firstValue, double secondValue) {
+                if (Math.abs(secondValue) <= EPSILON) {
+                    throw new ArithmeticException("Cannot divide by zero quantity.");
+                }
+                return firstValue / secondValue;
             }
         };
 

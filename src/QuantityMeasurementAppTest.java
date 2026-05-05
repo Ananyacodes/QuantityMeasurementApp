@@ -234,11 +234,14 @@ public class QuantityMeasurementAppTest {
         testDivision_AllMeasurementCategories();
         testDivision_PrecisionHandling();
         testDivision_Immutability();
+        testValidation_NullOperand_ConsistentAcrossOperations();
+        testValidation_CrossCategory_ConsistentAcrossOperations();
+        testArithmetic_Chain_Operations();
         testQuantityMeasurementApp_SimplifiedDemonstration_Subtraction();
         testQuantityMeasurementApp_SimplifiedDemonstration_SubtractionImplicitUnit();
         testQuantityMeasurementApp_SimplifiedDemonstration_Division();
 
-        System.out.println("All UC12 tests passed.");
+        System.out.println("All UC13 tests passed.");
     }
 
     private static void testEquality_FeetToFeet_SameValue() {
@@ -2389,6 +2392,58 @@ public class QuantityMeasurementAppTest {
         assertDoubleEquals(5.0, result, "Expected division to return the correct scalar result.");
     }
 
+    private static void testValidation_NullOperand_ConsistentAcrossOperations() {
+        String addMessage = captureIllegalArgumentMessage(
+                () -> new Quantity<>(10.0, LengthUnit.FEET).add(null)
+        );
+        String subtractMessage = captureIllegalArgumentMessage(
+                () -> new Quantity<>(10.0, LengthUnit.FEET).subtract(null)
+        );
+        String divideMessage = captureIllegalArgumentMessage(
+                () -> new Quantity<>(10.0, LengthUnit.FEET).divide(null)
+        );
+
+        assertCondition(
+                "Quantities cannot be null.".equals(addMessage)
+                        && addMessage.equals(subtractMessage)
+                        && addMessage.equals(divideMessage),
+                "Expected null-operand validation to be consistent across add, subtract, and divide."
+        );
+    }
+
+    private static void testValidation_CrossCategory_ConsistentAcrossOperations() {
+        String addMessage = captureIllegalArgumentMessage(
+                () -> ((Quantity) new Quantity<>(10.0, LengthUnit.FEET))
+                        .add(new Quantity<>(5.0, WeightUnit.KILOGRAM))
+        );
+        String subtractMessage = captureIllegalArgumentMessage(
+                () -> ((Quantity) new Quantity<>(10.0, LengthUnit.FEET))
+                        .subtract(new Quantity<>(5.0, WeightUnit.KILOGRAM))
+        );
+        String divideMessage = captureIllegalArgumentMessage(
+                () -> ((Quantity) new Quantity<>(10.0, LengthUnit.FEET))
+                        .divide(new Quantity<>(5.0, WeightUnit.KILOGRAM))
+        );
+
+        assertCondition(
+                "Quantities must belong to the same measurement category.".equals(addMessage)
+                        && addMessage.equals(subtractMessage)
+                        && addMessage.equals(divideMessage),
+                "Expected cross-category validation to be consistent across add, subtract, and divide."
+        );
+    }
+
+    private static void testArithmetic_Chain_Operations() {
+        double result = new Quantity<>(10.0, LengthUnit.FEET)
+                .add(new Quantity<>(12.0, LengthUnit.INCHES))
+                .subtract(new Quantity<>(6.0, LengthUnit.INCHES))
+                .divide(new Quantity<>(1.5, LengthUnit.FEET));
+
+        assertDoubleEquals(7.0,
+                result,
+                "Expected chained add/subtract/divide operations to preserve behavior after refactoring.");
+    }
+
     private static void testQuantityMeasurementApp_SimplifiedDemonstration_Subtraction() {
         assertGenericQuantityEquals(
                 5.0,
@@ -2487,6 +2542,15 @@ public class QuantityMeasurementAppTest {
             runnable.run();
             throw new AssertionError(message);
         } catch (ArithmeticException ignored) {
+        }
+    }
+
+    private static String captureIllegalArgumentMessage(Runnable runnable) {
+        try {
+            runnable.run();
+            throw new AssertionError("Expected IllegalArgumentException to be thrown.");
+        } catch (IllegalArgumentException exception) {
+            return exception.getMessage();
         }
     }
 }
