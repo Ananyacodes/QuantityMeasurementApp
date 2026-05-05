@@ -1,4 +1,9 @@
 public class QuantityMeasurementApp {
+    public static void main(String[] args) {
+        printSubtractionExamples();
+        printDivisionExamples();
+    }
+
     public static boolean areFeetEqual(double firstValue, double secondValue) {
         return new QuantityLength(firstValue, LengthUnit.FEET)
                 .equals(new QuantityLength(secondValue, LengthUnit.FEET));
@@ -73,6 +78,16 @@ public class QuantityMeasurementApp {
             throw new IllegalArgumentException("Quantities cannot be null.");
         }
         return first.add(second, targetUnit);
+    }
+
+    public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
+            Quantity<U> first,
+            Quantity<U> second
+    ) {
+        if (first == null || second == null) {
+            throw new IllegalArgumentException("Quantities cannot be null.");
+        }
+        return first.subtract(second);
     }
 
     public static <U extends IMeasurable> Quantity<U> demonstrateSubtraction(
@@ -217,5 +232,86 @@ public class QuantityMeasurementApp {
         if (firstWeight == null || secondWeight == null) {
             throw new IllegalArgumentException("Quantities cannot be null.");
         }
+    }
+
+    private static void printSubtractionExamples() {
+        System.out.println("Subtraction with Implicit Target Unit:");
+        printExample(
+                "new Quantity<>(10.0, FEET).subtract(new Quantity<>(6.0, INCHES))",
+                new Quantity<>(10.0, LengthUnit.FEET).subtract(new Quantity<>(6.0, LengthUnit.INCHES))
+        );
+        printExample(
+                "new Quantity<>(10.0, KILOGRAM).subtract(new Quantity<>(5000.0, GRAM))",
+                new Quantity<>(10.0, WeightUnit.KILOGRAM).subtract(new Quantity<>(5000.0, WeightUnit.GRAM))
+        );
+        printExample(
+                "new Quantity<>(5.0, LITRE).subtract(new Quantity<>(500.0, MILLILITRE))",
+                new Quantity<>(5.0, VolumeUnit.LITRE).subtract(new Quantity<>(500.0, VolumeUnit.MILLILITRE))
+        );
+        System.out.println();
+
+        System.out.println("Subtraction with Explicit Target Unit:");
+        printExample(
+                "new Quantity<>(10.0, FEET).subtract(new Quantity<>(6.0, INCHES), INCHES)",
+                new Quantity<>(10.0, LengthUnit.FEET)
+                        .subtract(new Quantity<>(6.0, LengthUnit.INCHES), LengthUnit.INCHES)
+        );
+        printExample(
+                "new Quantity<>(10.0, KILOGRAM).subtract(new Quantity<>(5000.0, GRAM), GRAM)",
+                new Quantity<>(10.0, WeightUnit.KILOGRAM)
+                        .subtract(new Quantity<>(5000.0, WeightUnit.GRAM), WeightUnit.GRAM)
+        );
+        printExample(
+                "new Quantity<>(5.0, LITRE).subtract(new Quantity<>(2.0, LITRE), MILLILITRE)",
+                new Quantity<>(5.0, VolumeUnit.LITRE)
+                        .subtract(new Quantity<>(2.0, VolumeUnit.LITRE), VolumeUnit.MILLILITRE)
+        );
+        System.out.println();
+
+        System.out.println("Subtraction Resulting in Negative Values:");
+        printExample(
+                "new Quantity<>(5.0, FEET).subtract(new Quantity<>(10.0, FEET))",
+                new Quantity<>(5.0, LengthUnit.FEET).subtract(new Quantity<>(10.0, LengthUnit.FEET))
+        );
+        printExample(
+                "new Quantity<>(2.0, KILOGRAM).subtract(new Quantity<>(5.0, KILOGRAM))",
+                new Quantity<>(2.0, WeightUnit.KILOGRAM).subtract(new Quantity<>(5.0, WeightUnit.KILOGRAM))
+        );
+        System.out.println();
+
+        System.out.println("Subtraction Resulting in Zero:");
+        printExample(
+                "new Quantity<>(10.0, FEET).subtract(new Quantity<>(120.0, INCHES))",
+                new Quantity<>(10.0, LengthUnit.FEET).subtract(new Quantity<>(120.0, LengthUnit.INCHES))
+        );
+        printExample(
+                "new Quantity<>(1.0, LITRE).subtract(new Quantity<>(1000.0, MILLILITRE))",
+                new Quantity<>(1.0, VolumeUnit.LITRE).subtract(new Quantity<>(1000.0, VolumeUnit.MILLILITRE))
+        );
+        System.out.println();
+    }
+
+    private static void printDivisionExamples() {
+        System.out.println("Division Operations:");
+        printExample(
+                "new Quantity<>(10.0, FEET).divide(new Quantity<>(2.0, FEET))",
+                new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(2.0, LengthUnit.FEET))
+        );
+        printExample(
+                "new Quantity<>(24.0, INCHES).divide(new Quantity<>(2.0, FEET))",
+                new Quantity<>(24.0, LengthUnit.INCHES).divide(new Quantity<>(2.0, LengthUnit.FEET))
+        );
+        printExample(
+                "new Quantity<>(10.0, KILOGRAM).divide(new Quantity<>(5.0, KILOGRAM))",
+                new Quantity<>(10.0, WeightUnit.KILOGRAM).divide(new Quantity<>(5.0, WeightUnit.KILOGRAM))
+        );
+        printExample(
+                "new Quantity<>(5.0, LITRE).divide(new Quantity<>(10.0, LITRE))",
+                new Quantity<>(5.0, VolumeUnit.LITRE).divide(new Quantity<>(10.0, VolumeUnit.LITRE))
+        );
+    }
+
+    private static void printExample(String input, Object output) {
+        System.out.println("Input: " + input + " -> Output: " + output);
     }
 }

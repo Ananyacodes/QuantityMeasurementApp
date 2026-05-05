@@ -200,29 +200,42 @@ public class QuantityMeasurementAppTest {
         testSubtraction_SameUnit_LitreMinusLitre();
         testSubtraction_CrossUnit_FeetMinusInches();
         testSubtraction_CrossUnit_InchesMinusFeet();
+        testSubtraction_ExplicitTargetUnit_Feet();
         testSubtraction_ExplicitTargetUnit_Inches();
+        testSubtraction_ExplicitTargetUnit_Millilitre();
         testSubtraction_ResultingInNegative();
         testSubtraction_ResultingInZero();
         testSubtraction_WithZeroOperand();
         testSubtraction_WithNegativeValues();
         testSubtraction_NonCommutative();
+        testSubtraction_WithLargeValues();
+        testSubtraction_WithSmallValues();
         testSubtraction_NullOperand();
         testSubtraction_NullTargetUnit();
+        testSubtraction_CrossCategory();
+        testSubtraction_AllMeasurementCategories();
         testSubtraction_ChainedOperations();
         testSubtractionAddition_Inverse();
         testSubtraction_Immutability();
+        testSubtraction_PrecisionAndRounding();
         testDivision_SameUnit_FeetDividedByFeet();
         testDivision_SameUnit_LitreDividedByLitre();
         testDivision_CrossUnit_FeetDividedByInches();
         testDivision_CrossUnit_KilogramDividedByGram();
+        testDivision_RatioGreaterThanOne();
         testDivision_RatioLessThanOne();
         testDivision_RatioEqualToOne();
         testDivision_NonCommutative();
         testDivision_ByZero();
+        testDivision_WithLargeRatio();
+        testDivision_WithSmallRatio();
         testDivision_NullOperand();
+        testDivision_CrossCategory();
         testDivision_AllMeasurementCategories();
+        testDivision_PrecisionHandling();
         testDivision_Immutability();
         testQuantityMeasurementApp_SimplifiedDemonstration_Subtraction();
+        testQuantityMeasurementApp_SimplifiedDemonstration_SubtractionImplicitUnit();
         testQuantityMeasurementApp_SimplifiedDemonstration_Division();
 
         System.out.println("All UC12 tests passed.");
@@ -2096,6 +2109,16 @@ public class QuantityMeasurementAppTest {
         );
     }
 
+    private static void testSubtraction_ExplicitTargetUnit_Feet() {
+        assertGenericQuantityEquals(
+                9.5,
+                LengthUnit.FEET,
+                new Quantity<>(10.0, LengthUnit.FEET)
+                        .subtract(new Quantity<>(6.0, LengthUnit.INCHES), LengthUnit.FEET),
+                "Expected explicit target-unit subtraction in feet to work."
+        );
+    }
+
     private static void testSubtraction_ExplicitTargetUnit_Inches() {
         assertGenericQuantityEquals(
                 114.0,
@@ -2103,6 +2126,16 @@ public class QuantityMeasurementAppTest {
                 new Quantity<>(10.0, LengthUnit.FEET)
                         .subtract(new Quantity<>(6.0, LengthUnit.INCHES), LengthUnit.INCHES),
                 "Expected explicit target-unit subtraction to work."
+        );
+    }
+
+    private static void testSubtraction_ExplicitTargetUnit_Millilitre() {
+        assertGenericQuantityEquals(
+                3000.0,
+                VolumeUnit.MILLILITRE,
+                new Quantity<>(5.0, VolumeUnit.LITRE)
+                        .subtract(new Quantity<>(2.0, VolumeUnit.LITRE), VolumeUnit.MILLILITRE),
+                "Expected explicit target-unit subtraction in millilitres to work."
         );
     }
 
@@ -2152,6 +2185,24 @@ public class QuantityMeasurementAppTest {
                 "Expected subtraction to be non-commutative.");
     }
 
+    private static void testSubtraction_WithLargeValues() {
+        assertGenericQuantityEquals(
+                5e5,
+                WeightUnit.KILOGRAM,
+                new Quantity<>(1e6, WeightUnit.KILOGRAM).subtract(new Quantity<>(5e5, WeightUnit.KILOGRAM)),
+                "Expected subtraction to support large values."
+        );
+    }
+
+    private static void testSubtraction_WithSmallValues() {
+        assertGenericQuantityEquals(
+                0.0,
+                LengthUnit.FEET,
+                new Quantity<>(0.001, LengthUnit.FEET).subtract(new Quantity<>(0.0005, LengthUnit.FEET)),
+                "Expected subtraction to round small values to two decimals."
+        );
+    }
+
     private static void testSubtraction_NullOperand() {
         assertThrows(
                 () -> new Quantity<>(10.0, LengthUnit.FEET).subtract(null),
@@ -2164,6 +2215,29 @@ public class QuantityMeasurementAppTest {
                 () -> new Quantity<>(10.0, LengthUnit.FEET)
                         .subtract(new Quantity<>(5.0, LengthUnit.FEET), null),
                 "Expected subtraction to reject null target units."
+        );
+    }
+
+    private static void testSubtraction_CrossCategory() {
+        assertThrows(
+                () -> ((Quantity) new Quantity<>(10.0, LengthUnit.FEET))
+                        .subtract(new Quantity<>(5.0, WeightUnit.KILOGRAM)),
+                "Expected subtraction to reject cross-category operands."
+        );
+    }
+
+    private static void testSubtraction_AllMeasurementCategories() {
+        assertGenericQuantityEquals(
+                5.0,
+                WeightUnit.KILOGRAM,
+                new Quantity<>(10.0, WeightUnit.KILOGRAM).subtract(new Quantity<>(5000.0, WeightUnit.GRAM)),
+                "Expected subtraction to work for weight."
+        );
+        assertGenericQuantityEquals(
+                4.5,
+                VolumeUnit.LITRE,
+                new Quantity<>(5.0, VolumeUnit.LITRE).subtract(new Quantity<>(500.0, VolumeUnit.MILLILITRE)),
+                "Expected subtraction to work for volume."
         );
     }
 
@@ -2197,6 +2271,16 @@ public class QuantityMeasurementAppTest {
                 "Expected subtraction to return a new quantity.");
     }
 
+    private static void testSubtraction_PrecisionAndRounding() {
+        assertGenericQuantityEquals(
+                0.33,
+                LengthUnit.FEET,
+                new Quantity<>(1.0, LengthUnit.FEET)
+                        .subtract(new Quantity<>(8.0, LengthUnit.INCHES), LengthUnit.FEET),
+                "Expected subtraction results to be rounded to two decimals."
+        );
+    }
+
     private static void testDivision_SameUnit_FeetDividedByFeet() {
         assertDoubleEquals(5.0,
                 new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(2.0, LengthUnit.FEET)),
@@ -2219,6 +2303,12 @@ public class QuantityMeasurementAppTest {
         assertDoubleEquals(1.0,
                 new Quantity<>(2.0, WeightUnit.KILOGRAM).divide(new Quantity<>(2000.0, WeightUnit.GRAM)),
                 "Expected cross-unit weight division to work.");
+    }
+
+    private static void testDivision_RatioGreaterThanOne() {
+        assertDoubleEquals(2.0,
+                new Quantity<>(10.0, LengthUnit.FEET).divide(new Quantity<>(5.0, LengthUnit.FEET)),
+                "Expected division to support ratios above one.");
     }
 
     private static void testDivision_RatioLessThanOne() {
@@ -2248,10 +2338,30 @@ public class QuantityMeasurementAppTest {
         );
     }
 
+    private static void testDivision_WithLargeRatio() {
+        assertDoubleEquals(1e6,
+                new Quantity<>(1e6, WeightUnit.KILOGRAM).divide(new Quantity<>(1.0, WeightUnit.KILOGRAM)),
+                "Expected division to support very large ratios.");
+    }
+
+    private static void testDivision_WithSmallRatio() {
+        assertDoubleEquals(1e-6,
+                new Quantity<>(1.0, WeightUnit.KILOGRAM).divide(new Quantity<>(1e6, WeightUnit.KILOGRAM)),
+                "Expected division to support very small ratios.");
+    }
+
     private static void testDivision_NullOperand() {
         assertThrows(
                 () -> new Quantity<>(10.0, LengthUnit.FEET).divide(null),
                 "Expected division to reject null operands."
+        );
+    }
+
+    private static void testDivision_CrossCategory() {
+        assertThrows(
+                () -> ((Quantity) new Quantity<>(10.0, LengthUnit.FEET))
+                        .divide(new Quantity<>(5.0, WeightUnit.KILOGRAM)),
+                "Expected division to reject cross-category operands."
         );
     }
 
@@ -2262,6 +2372,12 @@ public class QuantityMeasurementAppTest {
         assertDoubleEquals(0.5,
                 new Quantity<>(5.0, VolumeUnit.LITRE).divide(new Quantity<>(10.0, VolumeUnit.LITRE)),
                 "Expected division to work for volume.");
+    }
+
+    private static void testDivision_PrecisionHandling() {
+        assertDoubleEquals(1.0 / 3.0,
+                new Quantity<>(1.0, VolumeUnit.LITRE).divide(new Quantity<>(3.0, VolumeUnit.LITRE)),
+                "Expected division to preserve floating-point precision.");
     }
 
     private static void testDivision_Immutability() {
@@ -2283,6 +2399,18 @@ public class QuantityMeasurementAppTest {
                         WeightUnit.KILOGRAM
                 ),
                 "Expected generic subtraction demonstration to work."
+        );
+    }
+
+    private static void testQuantityMeasurementApp_SimplifiedDemonstration_SubtractionImplicitUnit() {
+        assertGenericQuantityEquals(
+                9.5,
+                LengthUnit.FEET,
+                QuantityMeasurementApp.demonstrateSubtraction(
+                        new Quantity<>(10.0, LengthUnit.FEET),
+                        new Quantity<>(6.0, LengthUnit.INCHES)
+                ),
+                "Expected generic subtraction demonstration without explicit target unit to work."
         );
     }
 
